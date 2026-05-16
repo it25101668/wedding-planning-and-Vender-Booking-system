@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Management – WMS Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">💍 WedLux Admin</div>
+
+    <!-- Sidebar Profile Section -->
+    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;">
+        <div style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+            <img th:if="${adminUser?.profilePic != null}" th:src="@{${adminUser.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+            <span th:unless="${adminUser?.profilePic != null}" style="font-size: 1.2rem;">👑</span>
+        </div>
+        <div style="overflow: hidden;">
+            <div style="color: white; font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${adminUser?.fullName ?: adminUser?.username}">Admin</div>
+            <div style="color: rgba(255,255,255,0.5); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Administrator</div>
+        </div>
+    </div>
+    <div class="sidebar-section-label">Management</div>
+    <a href="/admin/dashboard" class="nav-link">🏠 Dashboard</a>
+    <a href="/admin/users"     class="nav-link">👤 User Management</a>
+    <a href="/admin/users/customers" class="nav-link active">👥 Customers</a>
+    <a href="/admin/vendors"   class="nav-link">🏪 Vendor Management</a>
+    <a href="/admin/packages"  class="nav-link">📦 Package Management</a>
+    <a href="/admin/bookings"  class="nav-link">📅 Booking System</a>
+    <a href="/admin/reports"   class="nav-link">📊 Report Management</a>
+    <a th:if="${session.isSuperAdmin}" href="/admin/registration-requests" class="nav-link"
+       style="display:flex; justify-content:space-between; align-items:center;">
+        <span>📋 Admin Requests</span>
+        <span th:if="${pendingAdminRequests > 0}"
+              th:text="${pendingAdminRequests}"
+              style="background:#FF4081; color:#fff; font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:50px; min-width:20px; text-align:center;"></span>
+    </a>
+    <div class="sidebar-section-label">Account</div>
+    <a href="/admin/profile"   class="nav-link">⚙️ My Profile</a>
+    <div class="sidebar-footer">
+        <a href="/" class="nav-link">🌐 Public Site</a>
+        <a href="/logout" class="nav-link">🚪 Logout</a>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1>👥 Customer Management</h1>
+            <p style="color:#888; font-size:0.82rem; margin-top:4px;">View and manage all registered customers.</p>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${successMsg}" class="alert alert-success"><span>✅</span><span th:text="${successMsg}"></span></div>
+    <div th:if="${errorMsg}"   class="alert alert-danger"><span>⚠️</span><span th:text="${errorMsg}"></span></div>
+
+    <!-- Stat Card -->
+    <div class="stat-cards" style="grid-template-columns: repeat(2,1fr); max-width:360px; margin-bottom:24px;">
+        <div class="stat-card" style="border-bottom-color:#4A148C;">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total Customers</div>
+            <div class="stat-value" th:text="${totalCustomers}">0</div>
+        </div>
+        <div class="stat-card" style="border-bottom-color:#AD1457;">
+            <div class="stat-icon">🔍</div>
+            <div class="stat-label">Showing</div>
+            <div class="stat-value" th:text="${#lists.size(customers)}">0</div>
+        </div>
+    </div>
+
+    <!-- Customer Table -->
+    <div class="section-card page-fill">
+        <div class="section-header">
+            <h2>Registered Customers</h2>
+            <form action="/admin/users/customers" method="get" class="search-bar">
+                <input type="text" name="search" th:value="${search}" placeholder="Search by name, email or phone...">
+                <button type="submit" class="btn btn-sm">🔍 Search</button>
+                <a href="/admin/users/customers" class="btn btn-sm btn-secondary">Reset</a>
+            </form>
+        </div>
+
+        <table class="data-table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Status</th>
+                <th>Joined</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(customers)}">
+                <td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon">👥</div>
+                        <p>No customers have registered yet.</p>
+                    </div>
+                </td>
+            </tr>
+            <tr th:each="customer, stat : ${customers}">
+                <td th:text="${stat.count}"></td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#880E4F,#4A148C);
+                                        display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.85rem; flex-shrink:0; overflow:hidden;">
+                            <img th:if="${customer.profilePic != null}" th:src="@{${customer.profilePic}}" style="width:100%; height:100%; object-fit:cover;"/>
+                            <span th:unless="${customer.profilePic != null}" th:text="${#strings.substring(customer.firstName,0,1)}">A</span>
+                        </div>
+                        <div>
+                            <strong th:text="${customer.firstName + ' ' + customer.lastName}"></strong>
+                        </div>
+                    </div>
+                </td>
+                <td th:text="${customer.email}"></td>
+                <td th:text="${customer.phone ?: '-'}"></td>
+                <td th:text="${customer.address ?: '-'}"></td>
+                <td>
+                    <span class="badge badge-success" th:if="${customer.active}">Active</span>
+                    <span class="badge badge-danger"  th:unless="${customer.active}">Inactive</span>
+                </td>
+                <td style="font-size:0.82rem; color:#888;"
+                    th:text="${customer.createdAt != null ? #temporals.format(customer.createdAt, 'dd MMM yyyy') : '-'}">-</td>
+                <td>
+                    <a th:href="@{/admin/users/customers/edit/{id}(id=${customer.id})}" class="btn btn-sm">✏️ Edit</a>
+                    <a th:href="@{/admin/users/customers/delete/{id}(id=${customer.id})}" class="btn btn-sm btn-danger"
+                       onclick="return confirm('Delete this customer? This will also remove their bookings.')">🗑️ Delete</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

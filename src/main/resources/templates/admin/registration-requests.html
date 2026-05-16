@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Registration Requests – Wedding Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- ── Sidebar ─────────────────────────────────────────── -->
+<div class="sidebar">
+    <div class="sidebar-brand">💒 WedLux Admin</div>
+    <div class="sidebar-section-label">Main Menu</div>
+    <a href="/admin/dashboard"             class="nav-link">🏠 Dashboard</a>
+    <a href="/admin/users"                 class="nav-link">👤 Users</a>
+    <a href="/admin/users/customers"       class="nav-link">👥 Customers</a>
+    <a href="/admin/packages"              class="nav-link">💍 Packages</a>
+    <a href="/admin/bookings"              class="nav-link">📅 Bookings</a>
+    <a href="/admin/vendors"               class="nav-link">🏢 Vendors</a>
+    <a href="/admin/reports"               class="nav-link">📊 Reports</a>
+    <a href="/admin/registration-requests" class="nav-link active">📋 Admin Requests</a>
+    <div class="sidebar-footer">
+        <a href="/admin/profile" class="nav-link">⚙️ My Profile</a>
+        <a href="/logout"        class="nav-link">🚪 Logout</a>
+    </div>
+</div>
+
+<!-- ── Main Content ──────────────────────────────────────── -->
+<div class="main-content">
+
+    <div class="page-header">
+        <h1>📋 Admin Registration Requests</h1>
+        <div class="page-header-right">
+            <span style="font-size:0.88rem; color:var(--dark-pink-shine); font-weight:600;"
+                  th:text="${adminUser != null ? (adminUser.fullName != null ? adminUser.fullName : adminUser.username) : ''}"></span>
+            <span style="background:linear-gradient(135deg,#FF4081,#7B1FA2); color:#fff; font-size:0.65rem; font-weight:700; padding:2px 9px; border-radius:50px; letter-spacing:0.5px;">SUPER ADMIN</span>
+            <div class="admin-avatar">👑</div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${successMsg}" class="alert alert-success">
+        <span>✅</span><span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-danger">
+        <span>⚠️</span><span th:text="${errorMsg}"></span>
+    </div>
+
+    <!-- Summary bar -->
+    <div style="margin-bottom:18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-size:0.88rem; color:#666;">
+            Total requests: <strong th:text="${requests.size()}">0</strong>
+        </span>
+        <span class="badge badge-warning" th:if="${pendingCount > 0}" th:text="${pendingCount} + ' Pending'">Pending</span>
+        <span class="badge badge-success" th:if="${pendingCount == 0}">No Pending Requests</span>
+    </div>
+
+    <!-- ── Registration Requests Table ───────────────────── -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2>All Registration Requests</h2>
+        </div>
+
+        <div th:if="${#lists.isEmpty(requests)}" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No admin registration requests yet.</p>
+        </div>
+
+        <table class="data-table" th:unless="${#lists.isEmpty(requests)}">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Full Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Requested</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="req : ${requests}">
+                <td th:text="${req.id}"></td>
+                <td><strong th:text="${req.fullName}"></strong></td>
+                <td th:text="${req.username}"></td>
+                <td th:text="${req.email}"></td>
+                <td th:text="${req.phone != null ? req.phone : '-'}"></td>
+                <td style="white-space:nowrap;"
+                    th:text="${#temporals.format(req.requestedAt, 'dd MMM yyyy HH:mm')}"></td>
+                <td>
+                    <span class="badge badge-warning" th:if="${req.status == 'PENDING'}">⏳ Pending</span>
+                    <span class="badge badge-success" th:if="${req.status == 'APPROVED'}">✅ Approved</span>
+                    <span class="badge badge-danger"  th:if="${req.status == 'REJECTED'}">🚫 Rejected</span>
+                </td>
+                <td>
+                    <!-- Approve / Reject — PENDING only -->
+                    <div th:if="${req.status == 'PENDING'}" style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <form th:action="@{/admin/registration-requests/approve/{id}(id=${req.id})}"
+                              method="post" style="margin:0;">
+                            <button type="submit" class="btn btn-success btn-sm"
+                                    onclick="return confirm('Approve this admin request?')">
+                                ✅ Approve
+                            </button>
+                        </form>
+                        <form th:action="@{/admin/registration-requests/reject/{id}(id=${req.id})}"
+                              method="post" style="margin:0;">
+                            <input type="hidden" name="note" value="Request rejected by Super Admin.">
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Reject this request?')">
+                                🚫 Reject
+                            </button>
+                        </form>
+                    </div>
+                    <!-- Already reviewed -->
+                    <span th:if="${req.status != 'PENDING'}" style="font-size:0.8rem; color:#aaa;">
+                            Reviewed
+                            <span th:if="${req.reviewedAt != null}"
+                                  th:text="${#temporals.format(req.reviewedAt, 'dd MMM yyyy')}"></span>
+                            <span th:if="${req.reviewedAt == null}">—</span>
+                        </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ── Current Admins Table ───────────────────────────── -->
+    <div class="section-card">
+        <div class="section-header">
+            <div>
+                <h2>👤 Current Admins</h2>
+                <p style="color:#999; font-size:0.82rem; margin-top:4px;">
+                    These users have active admin access. You can remove their access at any time.
+                </p>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(currentAdmins)}" class="empty-state">
+            <div class="empty-icon">🚫</div>
+            <p>No other admins currently. Approve requests above to grant admin access.</p>
+        </div>
+
+        <table class="data-table" th:unless="${#lists.isEmpty(currentAdmins)}">
+            <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="adm : ${currentAdmins}">
+                <td><strong th:text="${adm.fullName != null ? adm.fullName : '-'}"></strong></td>
+                <td th:text="${adm.username}"></td>
+                <td th:text="${adm.email}"></td>
+                <td th:text="${adm.phone != null ? adm.phone : '-'}"></td>
+                <td>
+                    <span class="badge badge-success" th:if="${adm.active}">Active</span>
+                    <span class="badge badge-danger"  th:unless="${adm.active}">Inactive</span>
+                </td>
+                <td>
+                    <form th:action="@{/admin/registration-requests/remove-admin/{id}(id=${adm.id})}"
+                          method="post" style="margin:0;">
+                        <button type="submit" class="btn btn-danger btn-sm"
+                                onclick="return confirm('Remove this admin? They will lose access immediately.')">
+                            🗑 Remove Admin
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
