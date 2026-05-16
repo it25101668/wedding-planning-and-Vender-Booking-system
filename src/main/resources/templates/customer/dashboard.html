@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Dashboard – Wedding Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .dashboard-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar" style="background: linear-gradient(180deg, #880E4F 0%, #4A148C 100%);">
+    <div class="sidebar-brand">💒 My Wedding Portal</div>
+
+    <!-- Sidebar Profile Section -->
+    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;">
+        <div style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+            <img th:if="${customer?.profilePic != null}" th:src="@{${customer.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+            <span th:unless="${customer?.profilePic != null}" style="font-size: 1.2rem;">💒</span>
+        </div>
+        <div style="overflow: hidden;">
+            <div style="color: white; font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${customer?.fullName}">Customer</div>
+            <div style="color: rgba(255,255,255,0.6); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Customer</div>
+        </div>
+    </div>
+    <div class="sidebar-section-label">My Account</div>
+    <a href="/customer/dashboard" class="nav-link active">🏠 Dashboard</a>
+    <a href="/customer/profile"   class="nav-link">⚙️ My Profile</a>
+    <div class="sidebar-footer">
+        <a href="/logout" class="nav-link">🚪 Logout</a>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <!-- ── Page Header ──────────────────────────────────────── -->
+    <div class="page-header">
+        <h1>Welcome, <span th:text="${customer.firstName}">Customer</span>! 💍</h1>
+        <div class="page-header-right">
+            <span style="font-size:0.88rem; color:var(--dark-pink-shine); font-weight:500;" th:text="${customer.email}"></span>
+            <div class="admin-avatar" style="width: 35px; height: 35px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #eee; border: 1px solid rgba(0,0,0,0.05);">
+                <img th:if="${customer?.profilePic != null}" th:src="@{${customer.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+                <span th:unless="${customer?.profilePic != null}">💒</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dashboard-layout">
+        <div>
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>Welcome to your Dashboard</h2>
+                </div>
+                <div class="empty-state">
+                    <div class="empty-icon">👤</div>
+                    <p>You can manage your profile and view your basic account information here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

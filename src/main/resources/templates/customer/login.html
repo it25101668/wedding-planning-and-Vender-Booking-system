@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Login – Wedding Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* Reset admin layout styles for this page */
+        body {
+            display: block !important;
+            height: auto !important;
+            overflow: auto !important;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4A148C 0%, #880E4F 60%, #AD1457 100%) !important;
+        }
+        .login-card h2 {
+            text-align: center;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+        .login-card p { text-align: center; }
+    </style>
+</head>
+<body>
+<div class="login-wrapper">
+    <div class="login-card" style="
+        max-width: 480px;
+        width: 100%;
+        border: 3px solid transparent;
+        background-clip: padding-box;
+        box-shadow:
+            0 0 0 3px #AD1457,
+            0 0 0 6px #7B1FA2,
+            0 0 0 9px rgba(255,64,129,0.2),
+            0 30px 70px rgba(0,0,0,0.4);
+        border-radius: 16px;
+    ">
+        <div class="login-logo">💒</div>
+        <h2>Customer Login</h2>
+        <p>Sign in to manage your wedding bookings</p>
+
+        <!-- Already Logged In Banner -->
+        <div th:if="${alreadyLoggedIn}" style="
+            background: linear-gradient(135deg, rgba(136,14,79,0.08), rgba(74,20,140,0.08));
+            border: 2px solid rgba(136,14,79,0.25);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 18px;
+            text-align: center;
+        ">
+            <div style="font-size:1.8rem; margin-bottom:6px;">👋</div>
+            <p style="font-weight:600; color:var(--dark-pink-shine); margin-bottom:4px;"
+               th:text="'Welcome back, ' + ${customer.firstName} + '!'">Welcome back!</p>
+            <p style="font-size:0.82rem; color:#888; margin-bottom:12px;">You are already logged in.</p>
+            <a href="/customer/dashboard" class="btn" style="width:100%; justify-content:center; background:linear-gradient(135deg,#880E4F,#4A148C);">
+                🏠 Go to My Dashboard
+            </a>
+            <div style="margin-top:10px; font-size:0.82rem; color:#aaa; text-align:center;">
+                Not you? <a href="/logout" style="color:var(--primary-pink); font-weight:600;">Logout</a> first.
+            </div>
+        </div>
+
+        <div th:if="${errorMsg}"   class="alert alert-danger"><span>⚠️</span><span th:text="${errorMsg}"></span></div>
+        <div th:if="${successMsg}" class="alert alert-success"><span>✅</span><span th:text="${successMsg}"></span></div>
+
+        <form action="/customer/login" method="post">
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="your@email.com" required>
+            </div>
+            <div class="form-group" style="margin-bottom:22px;">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Your password" required>
+            </div>
+            <button type="submit" class="btn" style="width:100%; justify-content:center;">💒 Sign In</button>
+        </form>
+
+
+        <div style="margin-top:12px; text-align:center;">
+            <a href="/" class="btn btn-outline" style="width:100%; justify-content:center;">🏠 Back to Main Page</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
