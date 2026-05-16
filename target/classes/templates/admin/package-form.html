@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${formTitle} + ' – WMS Admin'">Package Form</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* ── Drag-and-Drop Zone ─────────────────────────────────────── */
+        .image-upload-section { margin-top: 8px; }
+
+        .drop-zone {
+            border: 2px dashed var(--accent-pink);
+            border-radius: 16px;
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg,
+            rgba(240,98,146,0.04) 0%,
+            rgba(74,20,140,0.04) 100%);
+            position: relative;
+            user-select: none;
+        }
+        .drop-zone.dragover {
+            border-color: var(--primary-pink);
+            background: linear-gradient(135deg,
+            rgba(240,98,146,0.12) 0%,
+            rgba(74,20,140,0.10) 100%);
+            box-shadow: 0 0 0 4px rgba(173,20,87,0.12);
+            transform: scale(1.01);
+        }
+        .drop-zone-icon {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            display: block;
+            animation: floatIcon 2.8s ease-in-out infinite alternate;
+        }
+        @keyframes floatIcon {
+            from { transform: translateY(0); }
+            to   { transform: translateY(-6px); }
+        }
+        .drop-zone-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--dark-pink-shine);
+            margin-bottom: 4px;
+        }
+        .drop-zone-sub {
+            font-size: 0.78rem;
+            color: #999;
+        }
+        .drop-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ── Upload Progress Strip ──────────────────────────────────── */
+        .upload-progress-bar {
+            height: 4px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary-pink), var(--shining-pink));
+            transition: width 0.4s ease;
+            margin-top: 10px;
+        }
+
+        /* ── Image Preview Grid ─────────────────────────────────────── */
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .preview-item {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            background: #fce4ec;
+            box-shadow: 0 3px 10px rgba(136,14,79,0.12);
+            animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.7); }
+            to   { opacity: 1; transform: scale(1); }
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        .preview-item:hover img { transform: scale(1.07); }
+
+        .preview-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(180, 10, 45, 0.90);
+            color: #fff;
+            border: 2px solid rgba(255,255,255,0.7);
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;          /* always visible */
+            transition: background 0.2s, transform 0.2s;
+            line-height: 1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+        .preview-remove:hover {
+            background: #c0392b;
+            transform: scale(1.15);
+        }
+
+        /* image index label */
+        .preview-badge {
+            position: absolute;
+            bottom: 5px;
+            left: 6px;
+            font-size: 0.62rem;
+            font-weight: 700;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
+            padding: 1px 6px;
+            border-radius: 50px;
+            pointer-events: none;
+        }
+
+        /* uploading overlay */
+        .preview-item.uploading::after {
+            content: '⏳';
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.75);
+            font-size: 1.6rem;
+            animation: spin 1.5s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Upload Status Badge ──────────────────────────────────────── */
+        .upload-status {
+            font-size: 0.78rem;
+            margin-top: 10px;
+            min-height: 20px;
+            color: var(--dark-pink-shine);
+            font-weight: 500;
+        }
+        .upload-status.error { color: #e74c3c; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-brand">💍 Wedding Planning System</div>
+    <div class="sidebar-section-label">Management</div>
+    <a href="/admin/dashboard" class="nav-link">🏠 Dashboard</a>
+    <a href="/admin/users"    class="nav-link">👤 User Management</a>
+    <a href="/admin/users/customers" class="nav-link">👥 Customers</a>
+    <a href="/admin/packages" class="nav-link active">📦 Package Management</a>
+    <a href="/admin/bookings" class="nav-link">📅 Booking System</a>
+    <a href="/admin/reports"  class="nav-link">📊 Report Management</a>
+    <div class="sidebar-section-label">Account</div>
+    <a href="/admin/profile"  class="nav-link">⚙️ Profile</a>
+    <div class="sidebar-footer"><a href="/logout" class="nav-link">🚪 Logout</a></div>
+</div>
+<div class="main-content">
+    <div class="page-header">
+        <h1 th:text="${formTitle}">Package Form</h1>
+        <a href="/admin/packages" class="btn btn-outline">← Back to Packages</a>
+    </div>
+    <div class="section-card">
+        <div class="form-container">
+            <form th:action="${formAction}" th:object="${pkg}" method="post" id="pkgForm">
+                <!-- hidden field carries the comma-separated image URL list -->
+                <input type="hidden" id="imageUrlsInput" name="imageUrls"
+                       th:value="${pkg.imageUrls}">
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Package Name *</label>
+                        <input type="text" th:field="*{name}" placeholder="e.g. Royal Gold Package" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (LKR) *</label>
+                        <input type="number" step="0.01" th:field="*{price}" placeholder="e.g. 250000.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <input type="text" th:field="*{duration}" placeholder="e.g. 1 Day, 2 Days">
+                    </div>
+                    <div class="form-group">
+                        <label>Max Guests</label>
+                        <input type="number" th:field="*{maxGuests}" placeholder="e.g. 200">
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" th:field="*{location}" placeholder="e.g. Colombo">
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select th:field="*{status}">
+                            <option value="Available">Available</option>
+                            <option value="Unavailable">Unavailable</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Description</label>
+                        <textarea th:field="*{description}" placeholder="Package overview..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Inclusions (comma-separated)</label>
+                        <textarea th:field="*{inclusions}" placeholder="Catering, Photography, Decoration, DJ, ..."></textarea>
+                    </div>
+
+                    <!-- ── DRAG & DROP IMAGE UPLOAD ───────────────────────── -->
+                    <div class="form-group full-width image-upload-section">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <label style="margin:0;">Package Images</label>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <span id="imgCount" style="font-size:0.78rem; color:#aaa;"></span>
+                                <button type="button" id="clearAllBtn"
+                                        onclick="clearAllImages()"
+                                        style="display:none; font-size:0.75rem; padding:4px 12px;
+                                               background:rgba(231,76,60,0.12); color:#c0392b;
+                                               border:1px solid rgba(231,76,60,0.3); border-radius:50px;
+                                               cursor:pointer; font-weight:600; transition:all 0.2s;"
+                                        onmouseover="this.style.background='rgba(231,76,60,0.22)'"
+                                        onmouseout="this.style.background='rgba(231,76,60,0.12)'">
+                                    🗑 Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="drop-zone" id="dropZone">
+                            <input type="file" id="fileInput" accept="image/*" multiple>
+                            <span class="drop-zone-icon">🖼️</span>
+                            <p class="drop-zone-title">Drag &amp; drop images here</p>
+                            <p class="drop-zone-sub">or click to browse · JPG, PNG, WEBP up to 10 MB each</p>
+                        </div>
+
+                        <div class="upload-status" id="uploadStatus"></div>
+                        <div class="preview-grid" id="previewGrid"></div>
+                    </div>
+                    <!-- ────────────────────────────────────────────────────── -->
+                </div>
+
+                <div class="form-actions">
+                    <a href="/admin/packages" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn" id="saveBtn">💾 Save Package</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        /* ── State ─────────────────────────────────────────────────────── */
+        const confirmedUrls = [];
+
+        /* ── DOM refs ──────────────────────────────────────────────────── */
+        const dropZone    = document.getElementById('dropZone');
+        const fileInput   = document.getElementById('fileInput');
+        const previewGrid = document.getElementById('previewGrid');
+        const statusEl    = document.getElementById('uploadStatus');
+        const hiddenInput = document.getElementById('imageUrlsInput');
+
+        /* ── Seed existing images (edit mode) ──────────────────────────── */
+        const existing = hiddenInput.value || '';
+        if (existing.trim()) {
+            existing.split(',').map(s => s.trim()).filter(Boolean).forEach(u => {
+                confirmedUrls.push(u);
+                addPreview(u, u);
+            });
+        }
+        refreshUI();
+
+        /* ── Drag events ───────────────────────────────────────────────── */
+        ['dragenter','dragover'].forEach(evt =>
+            dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.add('dragover'); })
+        );
+        ['dragleave','dragend','drop'].forEach(evt =>
+            dropZone.addEventListener(evt, e => { e.preventDefault(); dropZone.classList.remove('dragover'); })
+        );
+        dropZone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+        fileInput.addEventListener('change', () => {
+            handleFiles(fileInput.files);
+            fileInput.value = '';
+        });
+
+        /* ── Upload handler ────────────────────────────────────────────── */
+        function handleFiles(files) {
+            if (!files || files.length === 0) return;
+            const allowed = ['image/jpeg','image/png','image/webp','image/gif','image/jpg'];
+            const valid   = Array.from(files).filter(f => allowed.includes(f.type));
+            if (valid.length === 0) {
+                setStatus('⚠️ Only image files (JPG, PNG, WEBP) are accepted.', true);
+                return;
+            }
+            const fd = new FormData();
+            valid.forEach(f => fd.append('files', f));
+            const placeholders = valid.map(() => addPlaceholder());
+            setStatus(`⏳ Uploading ${valid.length} image(s)…`);
+
+            fetch('/admin/packages/upload-images', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    placeholders.forEach(p => p.remove());
+                    if (data.error) { setStatus('❌ ' + data.error, true); return; }
+                    data.urls.forEach(url => {
+                        confirmedUrls.push(url);
+                        addPreview(url, url);
+                    });
+                    syncHiddenInput();
+                    refreshUI();
+                    setStatus(`✅ ${data.urls.length} image(s) uploaded successfully!`);
+                })
+                .catch(err => {
+                    placeholders.forEach(p => p.remove());
+                    setStatus('❌ Upload failed. Please try again.', true);
+                    console.error(err);
+                });
+        }
+
+        /* ── Preview helpers ───────────────────────────────────────────── */
+        function addPlaceholder() {
+            const item = document.createElement('div');
+            item.className = 'preview-item uploading';
+            previewGrid.appendChild(item);
+            return item;
+        }
+
+        function addPreview(src, url) {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
+            item.dataset.url = url;
+
+            const img = document.createElement('img');
+            img.src = src;
+            img.alt = 'Package image';
+            img.onerror = function() {
+                // show placeholder if image fails to load
+                this.style.display = 'none';
+                item.style.background = '#fce4ec';
+            };
+
+            /* ── Red ✕ remove button – always visible ── */
+            const btn = document.createElement('button');
+            btn.type      = 'button';
+            btn.className = 'preview-remove';
+            btn.title     = 'Remove this image';
+            btn.innerHTML = '✕';
+            btn.addEventListener('click', () => {
+                removeImage(url, item);
+            });
+
+            item.appendChild(img);
+            item.appendChild(btn);
+            previewGrid.appendChild(item);
+            updateBadges();
+        }
+
+        /* ── Remove a single image ─────────────────────────────────────── */
+        function removeImage(url, item) {
+            const idx = confirmedUrls.indexOf(url);
+            if (idx > -1) confirmedUrls.splice(idx, 1);
+            // animate out then remove DOM element
+            item.style.transition = 'opacity 0.25s, transform 0.25s';
+            item.style.opacity = '0';
+            item.style.transform = 'scale(0.7)';
+            setTimeout(() => { item.remove(); updateBadges(); }, 260);
+            syncHiddenInput();
+            refreshUI();
+            setStatus('🗑️ Image removed.');
+        }
+
+        /* ── Clear all images ──────────────────────────────────────────── */
+        window.clearAllImages = function() {
+            if (!confirm('Remove ALL images from this package?')) return;
+            confirmedUrls.length = 0;
+            previewGrid.innerHTML = '';
+            syncHiddenInput();
+            refreshUI();
+            setStatus('🗑️ All images cleared.');
+        };
+
+        /* ── Update number badges on each card ─────────────────────────── */
+        function updateBadges() {
+            const items = previewGrid.querySelectorAll('.preview-item:not(.uploading)');
+            items.forEach((item, i) => {
+                let badge = item.querySelector('.preview-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'preview-badge';
+                    item.appendChild(badge);
+                }
+                badge.textContent = (i + 1) + '/' + items.length;
+            });
+        }
+
+        /* ── Keep hidden input and count display in sync ───────────────── */
+        function syncHiddenInput() {
+            hiddenInput.value = confirmedUrls.join(',');
+        }
+        function refreshUI() {
+            const count = confirmedUrls.length;
+            const countEl  = document.getElementById('imgCount');
+            const clearBtn = document.getElementById('clearAllBtn');
+            countEl.textContent  = count > 0 ? count + ' image' + (count === 1 ? '' : 's') : '';
+            clearBtn.style.display = count > 0 ? 'inline-block' : 'none';
+            updateBadges();
+        }
+        function setStatus(msg, isError = false) {
+            statusEl.textContent = msg;
+            statusEl.className   = 'upload-status' + (isError ? ' error' : '');
+            if (!isError) setTimeout(() => { if (statusEl.textContent === msg) statusEl.textContent = ''; }, 3500);
+        }
+    })();
+</script>
+</body>
+</html>
