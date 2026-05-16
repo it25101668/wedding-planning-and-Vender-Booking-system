@@ -1,4 +1,4 @@
-# WMS - Warehouse Management System
+# WMS - Wadding planning and Vendor Management System
 
 A comprehensive full-stack application for warehouse management featuring both frontend and backend components.
 
