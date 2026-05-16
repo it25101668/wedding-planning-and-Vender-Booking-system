@@ -99,8 +99,8 @@
     gap: 60px;
     padding: 100px 80px 60px;
     background: radial-gradient(ellipse at 70% 50%, rgba(74,20,140,0.5) 0%, transparent 60%),
-    radial-gradient(ellipse at 20% 80%, rgba(173,20,87,0.35) 0%, transparent 55%),
-    linear-gradient(160deg, #0a0010 0%, #1a0030 50%, #0a0010 100%);
+                radial-gradient(ellipse at 20% 80%, rgba(173,20,87,0.35) 0%, transparent 55%),
+                linear-gradient(160deg, #0a0010 0%, #1a0030 50%, #0a0010 100%);
     overflow: hidden;
 }
 
@@ -387,7 +387,7 @@
    ============================================================ */
 .packages-section {
     background: radial-gradient(ellipse at 50% 0%, rgba(74,20,140,0.4) 0%, transparent 70%),
-    linear-gradient(180deg, #120018 0%, #0a0010 100%);
+                linear-gradient(180deg, #120018 0%, #0a0010 100%);
 }
 .packages-grid {
     display: grid;

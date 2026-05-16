@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+import React from 'react';
+
+const CarServiceFrontend = () => {
+return (
+<div className="bg-gray-50 min-h-screen font-sans">
+    <nav className="bg-gray-900 text-white p-6 shadow-md flex justify-between items-center">
+        <div className="text-2xl font-bold tracking-wider text-red-500">AutoPro Service</div>
+        <div className="hidden md:flex space-x-8 text-gray-300">
+            <a href="#" className="hover:text-red-500 transition duration-300">Home</a>
+            <a href="#" className="hover:text-red-500 transition duration-300">Services</a>
+            <a href="#" className="hover:text-red-500 transition duration-300">Booking</a>
+            <a href="#" className="hover:text-red-500 transition duration-300">Contact</a>
+        </div>
+        <button className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded font-semibold transition duration-300">
+            Book Appointment
+        </button>
+    </nav>
+
+    <header className="bg-gray-800 text-white py-24 px-8 text-center border-b-8 border-red-600">
+        <h1 className="text-5xl font-extrabold mb-6">Premium Car Care & Repair</h1>
+        <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+            Expert mechanics, advanced diagnostics, and fast service to get you back on the road safely.
+        </p>
+        <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg text-lg font-bold shadow-lg transition duration-300">
+            Explore Services
+        </button>
+    </header>
+
+    <section className="py-20 px-8 max-w-7xl mx-auto">
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-14">Our Core Services</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+            <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-red-500 hover:shadow-xl transition duration-300">
+                <div className="text-red-500 text-4xl mb-4">⚙️</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Engine Diagnostics</h3>
+                <p className="text-gray-600">State-of-the-art computer diagnostics to identify and resolve engine issues quickly.</p>
+            </div>
+
+            <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-gray-900 hover:shadow-xl transition duration-300">
+                <div className="text-gray-800 text-4xl mb-4">🛞</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Tire & Brake Service</h3>
+                <p className="text-gray-600">Complete tire replacement, alignment, and comprehensive brake system repairs.</p>
+            </div>
+
+            <div className="bg-white p-8 rounded-lg shadow-lg border-t-4 border-red-500 hover:shadow-xl transition duration-300">
+                <div className="text-red-500 text-4xl mb-4">🛢️</div>
+                <h3 className="text-xl font-bold text-gray-900 mb-3">Oil & Filter Change</h3>
+                <p className="text-gray-600">Premium synthetic oil changes and fluid checks to keep your vehicle running smoothly.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <footer className="bg-gray-900 text-gray-400 py-8 text-center">
+        <p>&copy; 2026 AutoPro Service. All rights reserved.</p>
+    </footer>
+</div>
+);
+};
+
+export default CarServiceFrontend;
