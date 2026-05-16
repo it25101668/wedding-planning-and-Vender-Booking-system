@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${formTitle} + ' – WMS Admin'">Booking Form</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        /* ── Package Info Card ─────────────────────────────────── */
+        .pkg-info-card {
+            display: none;
+            margin-top: 10px;
+            background: linear-gradient(135deg, rgba(173,20,87,0.05), rgba(74,20,140,0.05));
+            border: 1.5px solid rgba(173,20,87,0.2);
+            border-radius: 14px;
+            padding: 16px 18px;
+            animation: fadeInUp 0.35s ease-out forwards;
+        }
+        .pkg-info-card.visible { display: block; }
+
+        .pkg-info-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .pkg-info-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--dark-pink-shine);
+            font-weight: 700;
+        }
+        .pkg-info-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 50px;
+            background: rgba(46,204,113,0.15);
+            color: #27ae60;
+        }
+        .pkg-info-badge.unavailable {
+            background: rgba(243,156,18,0.15);
+            color: #e67e22;
+        }
+        .pkg-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            gap: 10px;
+        }
+        .pkg-info-item {
+            background: rgba(255,255,255,0.75);
+            border-radius: 10px;
+            padding: 10px 12px;
+            border: 1px solid rgba(173,20,87,0.1);
+        }
+        .pkg-info-item label {
+            font-size: 0.67rem;
+            font-weight: 700;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: block;
+            margin-bottom: 3px;
+        }
+        .pkg-info-item span {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--dark-pink-shine);
+        }
+        .pkg-inclusions {
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: #666;
+            line-height: 1.6;
+        }
+        .pkg-inclusions strong { color: var(--dark-pink-shine); }
+
+        /* ── Autofilled field highlight ────────────────────────── */
+        .autofilled {
+            border-color: var(--primary-pink) !important;
+            background: rgba(173,20,87,0.04) !important;
+        }
+        .autofill-tag {
+            display: none;
+            font-size: 0.67rem;
+            font-weight: 700;
+            color: var(--primary-pink);
+            background: rgba(173,20,87,0.09);
+            padding: 1px 8px;
+            border-radius: 50px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .autofill-tag.show { display: inline-block; }
+    </style>
+</head>
+<body>
+
+<!-- ══ Hidden package data store (Thymeleaf renders these reliably) ══ -->
+<div id="pkg-store" style="display:none">
+    <div th:each="p : ${packages}"
+         class="pkg-row"
+         th:data-id="${p.id}"
+         th:data-name="${p.name}"
+         th:data-price="${p.price}"
+         th:data-location="${p.location != null ? p.location : ''}"
+         th:data-duration="${p.duration != null ? p.duration : ''}"
+         th:data-max-guests="${p.maxGuests != null ? p.maxGuests : ''}"
+         th:data-status="${p.status}"
+         th:data-inclusions="${p.inclusions != null ? p.inclusions : ''}">
+    </div>
+</div>
+
+<div class="sidebar">
+    <div class="sidebar-brand">💍 Wedding Planning System</div>
+    <div class="sidebar-section-label">Management</div>
+    <a href="/admin/dashboard" class="nav-link">🏠 Dashboard</a>
+    <a href="/admin/users"    class="nav-link">👤 User Management</a>
+    <a href="/admin/users/customers" class="nav-link">👥 Customers</a>
+    <a href="/admin/vendors"  class="nav-link">🏪 Vendor Management</a>
+    <a href="/admin/packages" class="nav-link">📦 Package Management</a>
+    <a href="/admin/bookings" class="nav-link active">📅 Booking System</a>
+    <a href="/admin/reports"  class="nav-link">📊 Report Management</a>
+    <div class="sidebar-section-label">Account</div>
+    <a href="/admin/profile"  class="nav-link">⚙️ Profile</a>
+    <div class="sidebar-footer"><a href="/logout" class="nav-link">🚪 Logout</a></div>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1 th:text="${formTitle}">Booking Form</h1>
+        <a href="/admin/bookings" class="btn btn-outline">← Back to Bookings</a>
+    </div>
+    <div class="section-card">
+        <div class="form-container" style="max-width:800px;">
+            <form th:action="${formAction}" th:object="${booking}" method="post" id="bookingForm">
+                <!-- Pass current booking ID for edit-mode: avoids blocking its own date -->
+                <input type="hidden" id="currentBookingId" th:value="${booking.id}">
+                <!-- Preserve payment details during update -->
+                <input type="hidden" th:field="*{paymentMethod}">
+                <input type="hidden" th:field="*{transactionId}">
+
+                <div class="form-grid">
+
+                    <!-- Customer -->
+                    <div class="form-group">
+                        <label>Customer *</label>
+                        <select name="customerId" required>
+                            <option value="">-- Select Customer --</option>
+                            <option th:each="c : ${customers}"
+                                    th:value="${c.id}"
+                                    th:text="${c.fullName + ' (' + c.email + ')'}"
+                                    th:selected="${booking.customer != null and booking.customer.id == c.id}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Package selector -->
+                    <div class="form-group">
+                        <label>Wedding Package</label>
+                        <select id="packageSelect" name="packageId" onchange="onPackageChange(this.value)">
+                            <option value="">-- No Package (Custom) --</option>
+                            <option th:each="p : ${packages}"
+                                    th:value="${p.id}"
+                                    th:text="${p.name + ' – LKR ' + #numbers.formatDecimal(p.price,0,'COMMA',0,'POINT')}"
+                                    th:selected="${booking.weddingPackage != null and booking.weddingPackage.id == p.id}">
+                            </option>
+                        </select>
+
+                        <!-- Live package preview card -->
+                        <div class="pkg-info-card" id="pkgInfoCard">
+                            <div class="pkg-info-header">
+                                <span class="pkg-info-name" id="piName"></span>
+                                <span class="pkg-info-badge" id="piStatus"></span>
+                            </div>
+                            <div class="pkg-info-grid">
+                                <div class="pkg-info-item">
+                                    <label>Price</label>
+                                    <span id="piPrice"></span>
+                                </div>
+                                <div class="pkg-info-item">
+                                    <label>Duration</label>
+                                    <span id="piDuration"></span>
+                                </div>
+                                <div class="pkg-info-item">
+                                    <label>Location</label>
+                                    <span id="piLocation"></span>
+                                </div>
+                                <div class="pkg-info-item">
+                                    <label>Max Guests</label>
+                                    <span id="piMaxGuests"></span>
+                                </div>
+                            </div>
+                            <div class="pkg-inclusions" id="piInclusions"></div>
+                        </div>
+                    </div>
+
+                    <!-- Event Date -->
+                    <div class="form-group">
+                        <label>Event Date *</label>
+                        <input type="date" id="eventDate" th:field="*{eventDate}"
+                               required onchange="onDateChange(this.value)">
+                        <!-- Availability warning -->
+                        <div id="dateWarning" style="display:none; margin-top:6px;
+                             background:rgba(231,76,60,0.1); border-left:3px solid #e74c3c;
+                             border-radius:8px; padding:8px 12px; font-size:0.8rem; color:#c0392b;">
+                            ⛔ <strong>This date is already booked</strong> for the selected package.
+                            Please choose a different date.
+                        </div>
+                        <div id="dateOk" style="display:none; margin-top:6px;
+                             background:rgba(46,204,113,0.1); border-left:3px solid #27ae60;
+                             border-radius:8px; padding:8px 12px; font-size:0.8rem; color:#1e8449;">
+                            ✅ This date is available for the selected package.
+                        </div>
+                    </div>
+
+                    <!-- Guest Count -->
+                    <div class="form-group">
+                        <label>
+                            Guest Count
+                            <span class="autofill-tag" id="guestTag">✦ Auto-filled</span>
+                        </label>
+                        <input type="number" id="guestCount" th:field="*{guestCount}" placeholder="e.g. 150">
+                    </div>
+
+                    <!-- Total Amount -->
+                    <div class="form-group">
+                        <label>
+                            Total Amount (LKR)
+                            <span class="autofill-tag" id="amountTag">✦ Auto-filled</span>
+                        </label>
+                        <input type="number" step="0.01" id="totalAmount" th:field="*{totalAmount}" placeholder="Auto-filled from package">
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label>Booking Status</label>
+                        <select th:field="*{status}">
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div class="form-group">
+                        <label>
+                            Payment Status
+                            <span th:if="${booking.paymentMethod == 'Card'}" style="margin-left:4px;">💳</span>
+                            <span th:if="${booking.paymentMethod == 'Cash'}" style="margin-left:4px;">💵</span>
+                            <span th:if="${booking.paymentMethod == 'Koko'}" style="margin-left:4px;">📱</span>
+                            <span class="autofill-tag" th:classappend="${booking.paymentStatus == 'Paid'} ? 'show' : ''">✦ Auto-filled</span>
+                        </label>
+                        <select th:field="*{paymentStatus}" th:disabled="${booking.paymentStatus == 'Paid'}">
+                            <option value="Unpaid">Payment Not Complete ❌</option>
+                            <option value="Paid">Payment Complete ✅</option>
+                            <option value="Partial">Partial Payment ⏳</option>
+                        </select>
+                        <input type="hidden" th:if="${booking.paymentStatus == 'Paid'}" th:field="*{paymentStatus}">
+                    </div>
+
+                    <!-- Auto-filled Payment Details (Read-only) -->
+                    <div th:if="${booking.paymentStatus == 'Paid'}" class="form-group full-width" 
+                         style="background:rgba(39,174,96,0.05); border:1px dashed #27ae60; padding:15px; border-radius:12px; display:grid; grid-template-columns:repeat(3,1fr); gap:15px; margin-top:10px;">
+                        <div>
+                            <label style="font-size:0.65rem; color:#666;">
+                                TRANSACTION ID
+                                <span class="autofill-tag show">✦ AUTO-FILLED</span>
+                            </label>
+                            <input type="text" th:field="*{transactionId}" readonly style="background:white; font-weight:700;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.65rem; color:#666;">
+                                PAYMENT METHOD
+                                <span class="autofill-tag show">✦ AUTO-FILLED</span>
+                            </label>
+                            <input type="text" th:field="*{paymentMethod}" readonly style="background:white; font-weight:700;">
+                        </div>
+                        <div>
+                            <label style="font-size:0.65rem; color:#666;">
+                                AMOUNT PAID (LKR)
+                                <span class="autofill-tag show">✦ AUTO-FILLED</span>
+                            </label>
+                            <input type="text" th:value="${#numbers.formatDecimal(booking.totalAmount ?: 0, 0, 'COMMA', 2, 'POINT')}" readonly style="background:white; font-weight:700;">
+                        </div>
+                        <div style="grid-column: span 3; font-size:0.7rem; color:#27ae60; font-weight:600;">
+                            🔒 Locked: This financial record was automatically generated and verified.
+                        </div>
+                    </div>
+
+                    <!-- Venue -->
+                    <div class="form-group full-width">
+                        <label>
+                            Venue
+                            <span class="autofill-tag" id="venueTag">✦ Auto-filled</span>
+                        </label>
+                        <input type="text" id="venue" th:field="*{venue}" placeholder="Event venue / location">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="form-group full-width">
+                        <label>Notes</label>
+                        <textarea th:field="*{notes}" placeholder="Additional notes or special requests..."></textarea>
+                    </div>
+
+                </div>
+                <div class="form-actions">
+                    <a href="/admin/bookings" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" id="submitBtn" class="btn">💾 Save Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ── Build PACKAGES map from the hidden data-attribute elements ── */
+var PACKAGES = {};
+document.querySelectorAll('#pkg-store .pkg-row').forEach(function(el) {
+    var id = el.getAttribute('data-id');
+    PACKAGES[id] = {
+        name:      el.getAttribute('data-name')      || '',
+        price:     parseFloat(el.getAttribute('data-price'))    || 0,
+        location:  el.getAttribute('data-location')  || '',
+        duration:  el.getAttribute('data-duration')  || '',
+        maxGuests: el.getAttribute('data-max-guests') !== ''
+                       ? parseInt(el.getAttribute('data-max-guests'), 10)
+                       : null,
+        status:    el.getAttribute('data-status')    || '',
+        inclusions:el.getAttribute('data-inclusions')|| ''
+    };
+});
+
+/* ── State ────────────────────────────────────────────────────── */
+var bookedDates = [];      // ISO strings of blocked dates for current package
+var dateIsBlocked = false; // true when chosen date is taken
+
+/* ── Helpers ─────────────────────────────────────────────────── */
+function fmtPrice(n) {
+    return 'LKR ' + Number(n).toLocaleString('en-LK', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+function setTag(id, show) {
+    document.getElementById(id).classList.toggle('show', show);
+}
+function setHighlight(elId, on) {
+    var el = document.getElementById(elId);
+    if (el) el.classList.toggle('autofilled', on);
+}
+function setDateFeedback(blocked) {
+    dateIsBlocked = blocked;
+    document.getElementById('dateWarning').style.display = blocked ? 'block' : 'none';
+    document.getElementById('dateOk').style.display      = (!blocked && document.getElementById('packageSelect').value && document.getElementById('eventDate').value) ? 'block' : 'none';
+    document.getElementById('submitBtn').disabled = blocked;
+    document.getElementById('submitBtn').style.opacity  = blocked ? '0.5' : '1';
+}
+
+/* ── Fetch booked dates for a package, then re-validate current date ─ */
+function loadBookedDates(packageId) {
+    if (!packageId) {
+        bookedDates = [];
+        setDateFeedback(false);
+        document.getElementById('dateOk').style.display = 'none';
+        return;
+    }
+    var bookingId = document.getElementById('currentBookingId').value;
+    var url = '/admin/bookings/booked-dates?packageId=' + packageId;
+    if (bookingId) url += '&excludeBookingId=' + bookingId;
+
+    fetch(url)
+        .then(function(r){ return r.json(); })
+        .then(function(dates) {
+            bookedDates = dates;
+            // Re-validate whichever date is already in the picker
+            var dateVal = document.getElementById('eventDate').value;
+            if (dateVal) onDateChange(dateVal);
+        })
+        .catch(function(){ bookedDates = []; });
+}
+
+/* ── Date change handler ──────────────────────────────────────── */
+function onDateChange(dateVal) {
+    if (!dateVal || !document.getElementById('packageSelect').value) {
+        document.getElementById('dateWarning').style.display = 'none';
+        document.getElementById('dateOk').style.display = 'none';
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('submitBtn').style.opacity = '1';
+        return;
+    }
+    var blocked = bookedDates.indexOf(dateVal) !== -1;
+    setDateFeedback(blocked);
+}
+
+/* ── Main package-change handler ─────────────────────────────── */
+function onPackageChange(id) {
+    var card      = document.getElementById('pkgInfoCard');
+    var totalEl   = document.getElementById('totalAmount');
+    var venueEl   = document.getElementById('venue');
+    var guestEl   = document.getElementById('guestCount');
+
+    // Reset availability UI
+    document.getElementById('dateWarning').style.display = 'none';
+    document.getElementById('dateOk').style.display = 'none';
+
+    if (!id || !PACKAGES[id]) {
+        card.classList.remove('visible');
+        ['totalAmount','venue','guestCount'].forEach(function(f){ setHighlight(f, false); });
+        ['amountTag','venueTag','guestTag'].forEach(function(t){ setTag(t, false); });
+        bookedDates = [];
+        document.getElementById('submitBtn').disabled = false;
+        document.getElementById('submitBtn').style.opacity = '1';
+        return;
+    }
+
+    var pkg = PACKAGES[id];
+
+    /* Populate info card */
+    document.getElementById('piName').textContent     = pkg.name;
+    document.getElementById('piPrice').textContent    = fmtPrice(pkg.price);
+    document.getElementById('piDuration').textContent = pkg.duration  || '—';
+    document.getElementById('piLocation').textContent = pkg.location  || '—';
+    document.getElementById('piMaxGuests').textContent= pkg.maxGuests != null ? pkg.maxGuests + ' guests' : '—';
+
+    var statusEl = document.getElementById('piStatus');
+    statusEl.textContent = pkg.status;
+    statusEl.className   = 'pkg-info-badge' + (pkg.status === 'Unavailable' ? ' unavailable' : '');
+
+    var inclEl = document.getElementById('piInclusions');
+    if (pkg.inclusions) {
+        var items = pkg.inclusions.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+        inclEl.innerHTML = '<strong>Includes:</strong> ' + items.join(' &nbsp;·&nbsp; ');
+    } else {
+        inclEl.innerHTML = '';
+    }
+    card.classList.add('visible');
+
+    /* Auto-fill: Total Amount ← price */
+    totalEl.value = pkg.price;
+    setHighlight('totalAmount', true);
+    setTag('amountTag', true);
+
+    /* Auto-fill: Venue ← location */
+    venueEl.value = pkg.location;
+    setHighlight('venue', !!pkg.location);
+    setTag('venueTag', !!pkg.location);
+
+    /* Auto-fill: Guest Count ← maxGuests */
+    if (pkg.maxGuests != null) {
+        guestEl.value = pkg.maxGuests;
+        setHighlight('guestCount', true);
+        setTag('guestTag', true);
+    } else {
+        setHighlight('guestCount', false);
+        setTag('guestTag', false);
+    }
+
+    /* Fetch booked dates for this package */
+    loadBookedDates(id);
+}
+
+/* ── Guard: block form submit if date is taken ─────────────────── */
+document.getElementById('bookingForm').addEventListener('submit', function(e) {
+    if (dateIsBlocked) {
+        e.preventDefault();
+        document.getElementById('dateWarning').scrollIntoView({behavior:'smooth'});
+    }
+});
+
+/* ── On page load: trigger for pre-selected package (edit mode) */
+document.addEventListener('DOMContentLoaded', function() {
+    var sel = document.getElementById('packageSelect');
+    if (sel && sel.value) {
+        onPackageChange(sel.value);
+    }
+});
+</script>
+</body>
+</html>
