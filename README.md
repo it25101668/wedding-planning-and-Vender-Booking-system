@@ -1,53 +1,43 @@
-# WMS - Wadding planning and Vendor Management System
+# Wedding Planning and Vendor Management System (WMS)
 
-A comprehensive full-stack application for warehouse management featuring both frontend and backend components.
+A comprehensive application for wedding planning featuring both frontend and backend components, built collaboratively to streamline event coordination.
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Installation](#installation)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Usage](#usage)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [License](#license)
-- [Support](#support)
+* [Overview](#overview)
+* [Modules & Team Structure](#modules--team-structure)
+* [Tech Stack](#tech-stack)
+* [Installation](#installation)
+* [Contributing](#contributing)
+* [Guidelines](#guidelines)
+* [License](#license)
 
 ## 🎯 Overview
 
-WMS (Warehouse Management System) is a modern full-stack application designed to streamline warehouse operations. It provides tools for inventory management, order processing, and warehouse logistics.
+WMS (Wedding Management System) is a modern full-stack application designed to streamline wedding operations. It provides tools for customer profile management, vendor logistics, package selection, and secure booking processing. The project was collaboratively built by a 6-member team, with the architecture divided into distinct, interconnected modules.
 
-**Repository:** 
+**Repository:** [Insert your repository link here]
 
-## 🤝 Contributing
+## 🧩 Modules & Team Structure
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+The system is divided into 6 core parts, with each of our 6 team members taking ownership of a specific module. All parts connect to a centralized database to function as a unified system:
 
-### Guidelines
-- Follow the existing code style
-- Write descriptive commit messages
-- Update documentation as needed
-- Ensure tests pass before submitting PR
+1. **Profile_Management_Customer_Dashboard** - Handles client onboarding, personal details, and user-facing dashboards.
+2. **Booking_Payment_System** - Manages event scheduling, invoicing, and secure transaction processing.
+3. **Package_Management** - Allows users to browse, customize, and select various wedding service packages.
+4. **user_management** - Controls authentication, authorization, and administrative access levels.
+5. **Vendor_Management_System_Entry** - Handles vendor registration, service listings, and vendor dashboards.
+6. **wedding-planning-and-Vender-Booking-system** - The core integration module that ties all system components together.
 
-## 📄 License
+## 💻 Tech Stack
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+* **Language:** Java 17
+* **Framework:** Spring Boot
+* **Database:** MySQL
+* **Architecture:** Modular MVC / RESTful APIs
 
-## 💬 Support
+## 🚀 Installation
 
-For support, please:
-- Open an issue on GitHub
-- Check existing documentation in `/docs`
-- Review the FAQ section
-
----
-
-**Last Updated:** May 16, 2026
-
+1. Clone the repository:
+   ```bash
+   git clone [https://github.com/your-username/wedding-planning-and-Vender-Booking-system.git](https://github.com/your-username/wedding-planning-and-Vender-Booking-system.git)
