@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WedLux – Premium Wedding Management System</title>
+    <meta name="description" content="Plan your dream wedding with WedLux – the all-in-one premium Wedding Management System for couples, vendors and planners.">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}">
+</head>
+<body class="index-body">
+
+<!-- ===== NAV ===== -->
+<nav class="landing-nav">
+    <div class="nav-container">
+        <div class="nav-brand">💍 WedLux</div>
+        <div class="nav-links">
+            <a href="#features" class="nav-a">Features</a>
+            <a href="#packages" class="nav-a">Packages</a>
+            <a href="#stats" class="nav-a">About</a>
+            <a href="/customer/login" class="nav-a">Customer Login</a>
+            <a href="/login" class="btn btn-sm nav-btn">Admin Portal</a>
+        </div>
+        <button class="nav-hamburger" onclick="toggleMenu()">☰</button>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+    <div class="hero-particles">
+        <span class="particle" style="--x:10%;--y:25%;--s:1.2s"></span>
+        <span class="particle" style="--x:80%;--y:15%;--s:1.8s"></span>
+        <span class="particle" style="--x:55%;--y:70%;--s:2.1s"></span>
+        <span class="particle" style="--x:30%;--y:80%;--s:1.5s"></span>
+        <span class="particle" style="--x:70%;--y:55%;--s:2.5s"></span>
+        <span class="particle" style="--x:15%;--y:60%;--s:1.9s"></span>
+    </div>
+    <div class="hero-content">
+        <div class="hero-badge">✈ PREMIUM WEDDING PLANNING</div>
+        <h1 class="hero-title">Your Dream Wedding,<br><span class="hero-highlight">Perfectly Planned</span></h1>
+        <p class="hero-subtitle">WedLux brings together couples, vendors, and planners in one luxury platform. Every detail, every moment — seamlessly managed.</p>
+        <div class="hero-actions">
+            <!-- If logged in as customer go to packages, else register -->
+            <a th:if="${session.customer != null}" href="#packages" class="btn hero-btn-primary">Browse Packages</a>
+            <a th:if="${session.customer == null}" href="/customer/register" class="btn hero-btn-primary">Get Started Free</a>
+            <a href="#features" class="btn btn-outline hero-btn-secondary">Learn More →</a>
+        </div>
+        <div class="hero-trust">
+            <span>🔒 Secure Platform</span>
+            <span>💐 All Inclusive</span>
+            <span>⭐ Premium Support</span>
+        </div>
+    </div>
+    <div class="hero-visual">
+        <div class="hero-card" style="animation:fadeInUp 1s ease-out 0.3s both;">👰</div>
+        <div class="hero-card hero-card-groom" style="animation:fadeInUp 1s ease-out 0.5s both;">🤵</div>
+    </div>
+</section>
+
+<!-- ===== STATS ===== -->
+<section class="stats-section reveal" id="stats">
+    <div class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-item" data-count="500">
+                <div class="stat-number" id="stat-weddings">500+</div>
+                <div class="stat-label-lg">Weddings Managed</div>
+            </div>
+            <div class="stat-item" th:data-count="${totalVendors}">
+                <div class="stat-number">100+</div>
+                <div class="stat-label-lg">Trusted Vendors</div>
+            </div>
+            <div class="stat-item" th:data-count="${totalPackages}">
+                <div class="stat-number" th:text="${totalPackages}">10</div>
+                <div class="stat-label-lg">Wedding Packages</div>
+            </div>
+            <div class="stat-item" th:data-count="${totalBookings}">
+                <div class="stat-number" th:text="${totalBookings + '+'}">0+</div>
+                <div class="stat-label-lg">Active Bookings</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="features-section reveal" id="features">
+    <div class="section-wrapper">
+        <div class="section-tag">What We Offer</div>
+        <h2 class="section-title">Everything You Need for the<br>Perfect Wedding</h2>
+        <p class="section-sub">From vendor management to booking tracking — WedLux covers it all.</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">👤</div>
+                <h3>User Management</h3>
+                <p>Manage admin and customer accounts with role-based access, profile photos, and activity tracking.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏪</div>
+                <h3>Vendor Directory</h3>
+                <p>Discover and manage top wedding vendors — photographers, caterers, florists, and more.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📦</div>
+                <h3>Wedding Packages</h3>
+                <p>Browse curated packages that bundle services for a seamless, stress-free planning experience.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3>Booking System</h3>
+                <p>Create, track, and manage bookings with real-time status updates and history logs.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Reports &amp; Analytics</h3>
+                <p>Generate detailed reports on bookings, revenue, and vendor performance at a glance.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚙️</div>
+                <h3>Profile Management</h3>
+                <p>Customers can update their profiles, view booking history, and manage preferences with ease.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== PACKAGES ===== -->
+<section class="packages-section reveal" id="packages">
+    <div class="section-wrapper">
+        <div class="section-tag">Curated Collections</div>
+        <h2 class="section-title">Our Premium Wedding Packages</h2>
+        <p class="section-sub">Choose from our carefully crafted bundles or customize your own experience.</p>
+        
+        <div class="packages-grid">
+            <div th:each="pkg, pkgStat : ${packages}" class="pkg-card" th:classappend="${pkgStat.index == 1 ? 'pkg-featured' : ''}">
+                <div class="pkg-badge" 
+                     th:classappend="${pkg.status == 'Available' ? 'badge-available' : 'badge-limited'}"
+                     th:text="${pkg.status}">Available</div>
+                
+                <div class="pkg-icon" th:switch="${pkgStat.index % 4}">
+                    <span th:case="0">🎁</span>
+                    <span th:case="1">💎</span>
+                    <span th:case="2">🥂</span>
+                    <span th:case="3">🌸</span>
+                </div>
+                
+                <h3 class="pkg-name" th:text="${pkg.name}">Gold Wedding</h3>
+                
+                <div class="pkg-price">
+                    <span class="pkg-currency">LKR</span>
+                    <span th:text="${#numbers.formatDecimal(pkg.price, 0, 'COMMA', 0, 'POINT')}">500,000</span>
+                </div>
+                
+                <p class="pkg-desc" th:text="${pkg.description}">Premium wedding package including photography, catering, and decor.</p>
+                
+                <div class="pkg-meta">
+                    <span th:text="'🕒 ' + ${pkg.duration}">1 Day</span>
+                    <span th:text="'📍 ' + ${pkg.location}">Colombo</span>
+                    <span th:text="'👥 ' + ${pkg.maxGuests} + ' Guests'">200 Guests</span>
+                </div>
+                
+                <ul class="pkg-features">
+                    <li th:each="incl : ${#strings.arraySplit(pkg.inclusions, ',')}" th:text="'✓ ' + ${incl.trim()}">✓ Photography</li>
+                </ul>
+                
+                <a th:href="${session.customer != null ? '/customer/book/' + pkg.id : '/customer/login'}" class="btn pkg-btn">Book Now</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta-section">
+    <div class="cta-inner">
+        <h2 class="cta-title">Ready to Plan Your Dream Wedding?</h2>
+        <p class="cta-sub">Join hundreds of happy couples who trusted WedLux to make their special day perfect.</p>
+        <div class="cta-actions">
+            <a href="/customer/register" class="btn cta-btn-primary">Start Planning Today</a>
+            <a href="customer/login" class="btn btn-outline cta-btn-secondary">Already a member? Login</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="landing-footer">
+    <div class="footer-inner">
+        <div class="footer-brand">💍 WedLux</div>
+        <p class="footer-tagline">Making weddings unforgettable, one memory at a time.</p>
+        <div class="footer-links">
+            <a href="/admin/login">Admin Portal</a>
+            <a href="/customer/login">Customer Login</a>
+            <a href="/customer/register">Register</a>
+        </div>
+        <p class="footer-copy">© 2025 WedLux Wedding Management System. All rights reserved.</p>
+    </div>
+</footer>
+
+<script>
+function toggleMenu() {
+    const nav = document.querySelector('.nav-links');
+    nav.classList.toggle('open');
+}
+// Close menu on link click
+document.querySelectorAll('.nav-a, .nav-btn').forEach(a => {
+    a.addEventListener('click', () => document.querySelector('.nav-links').classList.remove('open'));
+});
+
+// --- Scroll Reveal ---
+function reveal() {
+    var reveals = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
+    for (var i = 0; i < reveals.length; i++) {
+        var windowHeight = window.innerHeight;
+        var elementTop = reveals[i].getBoundingClientRect().top;
+        var elementVisible = 150;
+        if (elementTop < windowHeight - elementVisible) {
+            reveals[i].classList.add("active");
+            // If it's the stats section, trigger count up
+            if (reveals[i].id === 'stats') {
+                startCountUp();
+            }
+        }
+    }
+}
+window.addEventListener("scroll", reveal);
+
+// --- Count Up Animation ---
+let counted = false;
+function startCountUp() {
+    if (counted) return;
+    counted = true;
+    const stats = document.querySelectorAll('.stat-number');
+    stats.forEach(stat => {
+        const target = parseInt(stat.parentElement.getAttribute('data-count')) || parseInt(stat.innerText);
+        let count = 0;
+        const speed = 2000 / target; // adjust speed
+        const updateCount = () => {
+            const increment = Math.ceil(target / 50);
+            if (count < target) {
+                count += increment;
+                if (count > target) count = target;
+                stat.innerText = count + (stat.innerText.includes('+') ? '+' : '');
+                setTimeout(updateCount, 40);
+            } else {
+                stat.innerText = target + (stat.innerText.includes('+') ? '+' : '');
+            }
+        };
+        updateCount();
+    });
+}
+
+// Initial check
+reveal();
+</script>
+</body>
+</html>

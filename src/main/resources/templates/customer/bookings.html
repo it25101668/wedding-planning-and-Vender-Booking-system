@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings – Wedding Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- CSRF Meta Tags for Secure AJAX -->
+    <meta name="_csrf" th:content="${_csrf?.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
+    <!-- SweetAlert2 for premium popups -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        /* ── Confirm Modal ──────────────────────────────────────── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 20px;
+            padding: 36px 40px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+            animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes popIn {
+            from { opacity:0; transform:scale(0.8); }
+            to   { opacity:1; transform:scale(1); }
+        }
+        .modal-icon  { font-size: 3rem; margin-bottom: 12px; }
+        .modal-title { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--dark-pink-shine); margin-bottom: 8px; }
+        .modal-msg   { color: #666; font-size: 0.9rem; margin-bottom: 28px; line-height: 1.6; }
+        .modal-actions { display:flex; gap:12px; justify-content:center; }
+
+        /* Action column */
+        .action-col { display:flex; gap:8px; align-items:center; }
+    </style>
+</head>
+<body>
+<div class="sidebar" style="background: linear-gradient(180deg, #880E4F 0%, #4A148C 100%);">
+    <div class="sidebar-brand">💒 My Wedding Portal</div>
+
+    <!-- Sidebar Profile Section -->
+    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;">
+        <div style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+            <img th:if="${customer?.profilePic != null}" th:src="@{${customer.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+            <span th:unless="${customer?.profilePic != null}" style="font-size: 1.2rem;">💒</span>
+        </div>
+        <div style="overflow: hidden;">
+            <div style="color: white; font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${customer?.fullName}">Customer</div>
+            <div style="color: rgba(255,255,255,0.6); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Customer</div>
+        </div>
+    </div>
+    <div class="sidebar-section-label">My Account</div>
+    <a href="/customer/dashboard" class="nav-link">🏠 Dashboard</a>
+    <a href="/customer/bookings"  class="nav-link active">📅 My Bookings</a>
+    <a href="/customer/packages"  class="nav-link">🎁 Book a Package</a>
+    <a href="/customer/profile"   class="nav-link">⚙️ My Profile</a>
+    <div class="sidebar-footer">
+        <a href="/"       class="nav-link">🌐 Public Site</a>
+        <a href="/logout" class="nav-link">🚪 Logout</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1>My Booking History</h1>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="admin-avatar" style="width: 35px; height: 35px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #eee; border: 1px solid rgba(0,0,0,0.05);">
+                <img th:if="${customer?.profilePic != null}" th:src="@{${customer.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+                <span th:unless="${customer?.profilePic != null}">💒</span>
+            </div>
+            <a href="/customer/dashboard" class="btn btn-outline">← Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Flash messages -->
+    <div th:if="${successMsg}" class="alert alert-success"><span>✅</span><span th:text="${successMsg}"></span></div>
+    <div th:if="${errorMsg}"   class="alert alert-danger"><span>⚠️</span><span th:text="${errorMsg}"></span></div>
+
+    <div class="section-card">
+        <div class="section-header">
+            <h2>All Bookings</h2>
+            <span class="badge badge-pink" th:text="${bookings.size()} + ' Bookings'"></span>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(bookings)}" class="empty-state">
+            <div class="empty-icon">💍</div>
+            <p>You have no bookings yet. Contact our team to get started!</p>
+        </div>
+
+        <!-- Bookings table -->
+        <table class="data-table" th:unless="${#lists.isEmpty(bookings)}">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Package</th>
+                    <th>Event Date</th>
+                    <th>Venue</th>
+                    <th>Guests</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Notes</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="booking, stat : ${bookings}">
+                    <td th:text="${stat.count}"></td>
+                    <td><strong th:text="${booking.weddingPackage?.name ?: 'Custom Booking'}"></strong></td>
+                    <td th:text="${booking.eventDate}"></td>
+                    <td th:text="${booking.venue ?: '-'}"></td>
+                    <td th:text="${booking.guestCount ?: '-'}"></td>
+                    <td><strong th:text="'Rs. ' + ${#numbers.formatDecimal(booking.totalAmount ?: 0, 1, 'COMMA', 2, 'POINT')}"></strong></td>
+                    <td>
+                        <div th:if="${booking.paymentMethod == 'Koko'}" 
+                             style="padding:8px; background:rgba(123,31,162,0.05); border:1px solid rgba(123,31,162,0.2); border-radius:8px;">
+                            <span style="font-weight:700; font-size:0.82rem; color:#7B1FA2;">📱 Koko Plan</span>
+                            
+                            <!-- If fully paid -->
+                            <div th:if="${(booking.installmentsPaid ?: 0) == 3}" style="color:#2E7D32; font-size:0.75rem; font-weight:700; margin-top:4px;">
+                                ✅ Fully Paid (3/3)
+                            </div>
+                            
+                            <!-- If installments remaining -->
+                            <div th:if="${(booking.installmentsPaid ?: 0) < 3}">
+                                <div style="font-size:0.75rem; color:#4A148C; font-weight:700; margin-top:4px;">
+                                    Next: Rs. <span th:text="${#numbers.formatDecimal((booking.installmentsPaid ?: 0) == 0 ? (booking.totalAmount * 1.1 / 3.0) : (booking.totalAmount / 3.0), 0, 'COMMA', 2, 'POINT')}"></span>
+                                </div>
+                                <div style="font-size:0.65rem; color:#666; font-style:italic;" 
+                                     th:text="${(3 - (booking.installmentsPaid ?: 0)) + ' installments remaining'}"></div>
+                                <div th:if="${(booking.installmentsPaid ?: 0) == 0}" style="font-size:0.6rem; color:#880E4F; margin-top:2px;">
+                                    (Includes 10% installment fee)
+                                </div>
+                            </div>
+                        </div>
+                        <span th:if="${booking.paymentMethod == 'Card'}" style="color:#4A148C; font-weight:600; font-size:0.85rem;">💳 Card Paid</span>
+                        <span th:if="${booking.paymentMethod == 'Cash'}" style="color:#2E7D32; font-weight:600; font-size:0.85rem;">💵 Cash / On-Venue</span>
+                        <span th:unless="${booking.paymentMethod}" style="color:#ccc;">-</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-warning" th:if="${booking.status == 'Pending'}">Pending</span>
+                        <span class="badge badge-success" th:if="${booking.status == 'Confirmed'}">Confirmed</span>
+                        <span class="badge badge-info"    th:if="${booking.status == 'Completed'}">Completed</span>
+                        <span class="badge badge-danger"  th:if="${booking.status == 'Cancelled'}">Cancelled</span>
+                    </td>
+                    <td style="font-size:0.78rem; color:#888; max-width:140px;" th:text="${booking.notes ?: '-'}"></td>
+                    <td class="action-col">
+                        <button type="button"
+                                class="btn btn-danger btn-sm"
+                                th:data-id="${booking.id}"
+                                onclick="showDeleteModal(this.getAttribute('data-id'))"
+                                title="Remove from history">
+                            🗑 Delete
+                        </button>
+
+                        <button th:if="${booking.paymentMethod == 'Koko' && (booking.installmentsPaid ?: 0) < 3}" 
+                                type="button"
+                                class="btn btn-sm"
+                                style="background:#7B1FA2; color:white; border:none;"
+                                th:data-id="${booking.id}"
+                                th:data-paid="${booking.installmentsPaid ?: 0}"
+                                th:data-amount="${#numbers.formatDecimal(booking.totalAmount / 3.0, 0, 'COMMA', 2, 'POINT')}"
+                                onclick="showKokoModal(this)">
+                            💳 Koko Payment
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Custom Delete Modal -->
+<div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:15px; padding:30px; width:350px; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.2); animation: popIn 0.3s ease;">
+        <div style="font-size:3rem; margin-bottom:15px;">⚠️</div>
+        <h3 style="margin-bottom:10px; font-family:'Playfair Display',serif;">Are you sure?</h3>
+        <p style="color:#666; font-size:0.9rem; margin-bottom:25px;">Do you really want to remove this booking from your history? This action cannot be undone.</p>
+        <div style="display:flex; gap:10px; justify-content:center;">
+            <button onclick="hideDeleteModal()" style="padding:10px 25px; border-radius:8px; border:1px solid #ddd; background:#eee; cursor:pointer; font-weight:600;">No</button>
+            <a id="confirmDeleteBtn" href="#" style="padding:10px 25px; border-radius:8px; border:none; background:#e74c3c; color:white; text-decoration:none; font-weight:600;">Yes</a>
+        </div>
+    </div>
+</div>
+
+<!-- 💍 3-Step Koko Payment Modal -->
+<div id="kokoModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+    <div style="background:white; border-radius:25px; padding:40px; width:450px; text-align:center; box-shadow:0 15px-50px rgba(0,0,0,0.3); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <div style="font-size:3.5rem; margin-bottom:15px;">💳</div>
+        <h3 style="margin-bottom:10px; font-family:'Playfair Display',serif; color:#4A148C; font-size:1.6rem;">Koko Installment Plan</h3>
+        <p style="color:#777; font-size:0.85rem; margin-bottom:30px; line-height:1.4;">
+            Enjoy the flexibility of paying in 3 parts.<br>
+            <span style="color:#880E4F; font-weight:600;">(A 10% installment fee is applied to the total package price)</span>
+        </p>
+        <div style="display:flex; flex-direction:column; gap:15px;" id="installmentButtons">
+            <!-- Step 1 -->
+            <button id="btn-installment-1" onclick="processKokoPayment(1)" 
+                    style="padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:0.3s;">
+                <span>1️⃣ Pay Installment 1</span>
+                <span class="inst-status"></span>
+            </button>
+            <!-- Step 2 -->
+            <button id="btn-installment-2" onclick="processKokoPayment(2)" 
+                    style="padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:0.3s;">
+                <span>2️⃣ Pay Installment 2</span>
+                <span class="inst-status"></span>
+            </button>
+            <!-- Step 3 -->
+            <button id="btn-installment-3" onclick="processKokoPayment(3)" 
+                    style="padding:15px; border-radius:12px; border:none; font-weight:700; cursor:pointer; display:flex; justify-content:space-between; align-items:center; transition:0.3s;">
+                <span>3️⃣ Pay Installment 3</span>
+                <span class="inst-status"></span>
+            </button>
+        </div>
+        
+        <button onclick="hideKokoModal()" style="margin-top:25px; background:none; border:none; color:#999; cursor:pointer; font-weight:600;">Close Plan</button>
+    </div>
+</div>
+
+<!-- 🎉 Celebratory Success Modal -->
+<div id="celebrationModal" style="display:none; position:fixed; inset:0; background:rgba(255,255,255,0.95); z-index:10000; align-items:center; justify-content:center; text-align:center;">
+    <div style="animation: popIn 0.5s ease;">
+        <div style="font-size:6rem; margin-bottom:20px;">🎊</div>
+        <h1 style="font-family:'Playfair Display',serif; color:#880E4F; font-size:3rem; margin-bottom:10px;">Congratulations!</h1>
+        <p style="font-size:1.4rem; color:#4A148C; font-weight:600; margin-bottom:30px;">All Payments Completed Successfully!</p>
+        <p style="color:#666; margin-bottom:40px;">Your wedding booking is now fully confirmed and paid.</p>
+        <button onclick="location.reload()" style="padding:15px 40px; border-radius:50px; border:none; background:linear-gradient(45deg, #880E4F, #4A148C); color:white; font-weight:700; cursor:pointer; font-size:1.1rem; box-shadow:0 10px 20px rgba(136,14,79,0.3);">Awesome!</button>
+    </div>
+</div>
+
+<style>
+    @keyframes popIn {
+        from { transform: scale(0.8); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    .inst-paid { background: #E8F5E9 !important; color: #2E7D32 !important; border: 1px solid #A5D6A7 !important; cursor: default !important; }
+    .inst-active { background: #F3E5F5 !important; color: #7B1FA2 !important; border: 2px solid #7B1FA2 !important; box-shadow: 0 5px 15px rgba(123,31,162,0.2); }
+    .inst-locked { background: #F5F5F5 !important; color: #BBB !important; border: 1px solid #EEE !important; cursor: not-allowed !important; opacity: 0.7; }
+</style>
+
+<script>
+    let activeKokoBtn = null;
+
+    function showKokoModal(btn) {
+        activeKokoBtn = btn;
+        const paidCount = parseInt(btn.getAttribute('data-paid') || "0");
+        updateModalUI(paidCount);
+        document.getElementById('kokoModal').style.display = 'flex';
+    }
+
+    function updateModalUI(paidCount) {
+        for (let i = 1; i <= 3; i++) {
+            const el = document.getElementById('btn-installment-' + i);
+            if (!el) continue;
+            const status = el.querySelector('.inst-status');
+            
+            if (i <= paidCount) {
+                el.className = 'inst-paid';
+                if(status) status.innerText = '✅ Paid';
+                el.disabled = true;
+            } else if (i === paidCount + 1) {
+                el.className = 'inst-active';
+                if(status) status.innerText = '👉 Pay Now';
+                el.disabled = false;
+            } else {
+                el.className = 'inst-locked';
+                if(status) status.innerText = '🔒 Locked';
+                el.disabled = true;
+            }
+        }
+    }
+
+    function processKokoPayment(step) {
+        const bookingId = activeKokoBtn.getAttribute('data-id');
+        const btn = document.getElementById('btn-installment-' + step);
+        if(!btn) return;
+        
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = "⏳ Processing...";
+        btn.disabled = true;
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+        const requestHeaders = { 'Accept': 'application/json' };
+        if (csrfHeader && csrfToken && csrfHeader !== 'undefined') {
+            requestHeaders[csrfHeader] = csrfToken;
+        }
+
+        fetch('/customer/bookings/pay-koko/' + bookingId + '?installmentNum=' + step, {
+            method: 'POST',
+            headers: requestHeaders
+        })
+        .then(async response => {
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Server Error");
+            return data;
+        })
+        .then(data => {
+            if (data.success) {
+                const isFinal = (step === 3);
+                
+                Swal.fire({
+                    title: isFinal ? '🎊 All Payments Complete!' : 'Payment ' + step + ' Complete!',
+                    text: isFinal ? 'Your wedding booking is now fully confirmed and paid. Congratulations!' : 'Your installment has been recorded successfully.',
+                    icon: 'success',
+                    confirmButtonColor: '#7B1FA2',
+                    timer: isFinal ? 4000 : 2000
+                }).then(() => {
+                    if (isFinal) {
+                        document.getElementById('kokoModal').style.display = 'none';
+                        document.getElementById('celebrationModal').style.display = 'flex';
+                        
+                        // 🚀 Dynamic UI Update (No reload needed)
+                        const row = activeKokoBtn.closest('tr');
+                        
+                        // Update Payment Column (Cell 7)
+                        const paymentCell = row.querySelector('td:nth-child(7)');
+                        if (paymentCell) {
+                            paymentCell.innerHTML = `
+                                <div style="padding:8px; background:rgba(123,31,162,0.05); border:1px solid rgba(123,31,162,0.2); border-radius:8px;">
+                                    <span style="font-weight:700; font-size:0.82rem; color:#7B1FA2;">📱 Koko Plan</span>
+                                    <div style="color:#2E7D32; font-size:0.75rem; font-weight:700; margin-top:4px;">✅ Fully Paid (3/3)</div>
+                                </div>`;
+                        }
+
+                        // Update Status Column (Cell 8)
+                        const statusCell = row.querySelector('td:nth-child(8)');
+                        if (statusCell) {
+                            statusCell.innerHTML = '<span class="badge badge-success">Confirmed</span>';
+                        }
+
+                        // Hide the payment button
+                        activeKokoBtn.style.display = 'none';
+                    } else {
+                        activeKokoBtn.setAttribute('data-paid', step);
+                        updateModalUI(step);
+                    }
+                });
+            }
+        })
+        .catch(err => {
+            Swal.fire({ title: 'Error', text: err.message, icon: 'error', confirmButtonColor: '#e74c3c' });
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        });
+    }
+
+    function hideKokoModal() {
+        document.getElementById('kokoModal').style.display = 'none';
+        location.reload();
+    }
+
+    function showDeleteModal(id) {
+        document.getElementById('confirmDeleteBtn').href = '/customer/bookings/delete/' + id;
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
+    function hideDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+    document.addEventListener('keydown', e => { if(e.key === 'Escape') { hideKokoModal(); hideDeleteModal(); } });
+</script>
+</body>
+</html>
