@@ -86,47 +86,47 @@
 
         <table class="data-table">
             <thead>
-            <tr>
-                <th>#</th>
-                <th>Full Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
             <tbody>
-            <tr th:if="${#lists.isEmpty(users)}">
-                <td colspan="8">
-                    <div class="empty-state">
-                        <div class="empty-icon">👤</div>
-                        <p>No admins found. <a href="/admin/users/new" style="color:var(--primary-pink);">Add one now</a></p>
-                    </div>
-                </td>
-            </tr>
-            <tr th:each="user, stat : ${users}">
-                <td th:text="${stat.count}"></td>
-                <td th:text="${user.fullName ?: '-'}"></td>
-                <td><strong th:text="${user.username}"></strong></td>
-                <td th:text="${user.email}"></td>
-                <td th:text="${user.phone ?: '-'}"></td>
-                <td>
-                    <span class="badge badge-purple" th:if="${user.role == 'ADMIN'}">ADMIN</span>
-                    <span class="badge badge-info"   th:if="${user.role != 'ADMIN'}" th:text="${user.role}">USER</span>
-                </td>
-                <td>
-                    <span class="badge badge-success" th:if="${user.active}">Active</span>
-                    <span class="badge badge-danger"  th:unless="${user.active}">Inactive</span>
-                </td>
-                <td>
-                    <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm">✏️ Edit</a>
-                    <button type="button" class="btn btn-sm btn-danger"
-                            th:data-id="${user.id}"
-                            onclick="showDeleteModal('/admin/users/delete/' + this.getAttribute('data-id'))">🗑️ Delete</button>
-                </td>
-            </tr>
+                <tr th:if="${#lists.isEmpty(users)}">
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-icon">👤</div>
+                            <p>No admins found. <a href="/admin/users/new" style="color:var(--primary-pink);">Add one now</a></p>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:each="user, stat : ${users}">
+                    <td th:text="${stat.count}"></td>
+                    <td th:text="${user.fullName ?: '-'}"></td>
+                    <td><strong th:text="${user.username}"></strong></td>
+                    <td th:text="${user.email}"></td>
+                    <td th:text="${user.phone ?: '-'}"></td>
+                    <td>
+                        <span class="badge badge-purple" th:if="${user.role == 'ADMIN'}">ADMIN</span>
+                        <span class="badge badge-info"   th:if="${user.role != 'ADMIN'}" th:text="${user.role}">USER</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success" th:if="${user.active}">Active</span>
+                        <span class="badge badge-danger"  th:unless="${user.active}">Inactive</span>
+                    </td>
+                    <td>
+                        <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm">✏️ Edit</a>
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                th:data-id="${user.id}"
+                                onclick="showDeleteModal('/admin/users/delete/' + this.getAttribute('data-id'))">🗑️ Delete</button>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -139,48 +139,48 @@
 
         <table class="data-table">
             <thead>
-            <tr>
-                <th>#</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
             <tbody>
-            <tr th:if="${#lists.isEmpty(customers)}">
-                <td colspan="7">
-                    <div class="empty-state">
-                        <div class="empty-icon">🛍️</div>
-                        <p>No customers have registered yet.</p>
-                    </div>
-                </td>
-            </tr>
-            <tr th:each="customer, stat : ${customers}">
-                <td th:text="${stat.count}"></td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#880E4F,#4A148C);
-                                        display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.8rem; flex-shrink:0; overflow:hidden;">
-                            <img th:if="${customer.profilePic != null}" th:src="@{${customer.profilePic}}" style="width:100%; height:100%; object-fit:cover;"/>
-                            <span th:unless="${customer.profilePic != null}" th:text="${#strings.substring(customer.firstName,0,1)}">A</span>
+                <tr th:if="${#lists.isEmpty(customers)}">
+                    <td colspan="7">
+                        <div class="empty-state">
+                            <div class="empty-icon">🛍️</div>
+                            <p>No customers have registered yet.</p>
                         </div>
-                        <strong th:text="${customer.firstName}"></strong>
-                    </div>
-                </td>
-                <td th:text="${customer.lastName}"></td>
-                <td th:text="${customer.email}"></td>
-                <td th:text="${customer.phone ?: '-'}"></td>
-                <td th:text="${customer.address ?: '-'}"></td>
-                <td>
-                    <a th:href="@{/admin/users/customers/edit/{id}(id=${customer.id})}" class="btn btn-sm">✏️ Edit</a>
-                    <button type="button" class="btn btn-sm btn-danger"
-                            th:data-id="${customer.id}"
-                            onclick="showDeleteModal('/admin/users/customers/delete/' + this.getAttribute('data-id'), 'Delete this customer? This will also remove their bookings.')">🗑️ Delete</button>
-                </td>
-            </tr>
+                    </td>
+                </tr>
+                <tr th:each="customer, stat : ${customers}">
+                    <td th:text="${stat.count}"></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,#880E4F,#4A148C);
+                                        display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.8rem; flex-shrink:0; overflow:hidden;">
+                                <img th:if="${customer.profilePic != null}" th:src="@{${customer.profilePic}}" style="width:100%; height:100%; object-fit:cover;"/>
+                                <span th:unless="${customer.profilePic != null}" th:text="${#strings.substring(customer.firstName,0,1)}">A</span>
+                            </div>
+                            <strong th:text="${customer.firstName}"></strong>
+                        </div>
+                    </td>
+                    <td th:text="${customer.lastName}"></td>
+                    <td th:text="${customer.email}"></td>
+                    <td th:text="${customer.phone ?: '-'}"></td>
+                    <td th:text="${customer.address ?: '-'}"></td>
+                    <td>
+                        <a th:href="@{/admin/users/customers/edit/{id}(id=${customer.id})}" class="btn btn-sm">✏️ Edit</a>
+                        <button type="button" class="btn btn-sm btn-danger" 
+                                th:data-id="${customer.id}"
+                                onclick="showDeleteModal('/admin/users/customers/delete/' + this.getAttribute('data-id'), 'Delete this customer? This will also remove their bookings.')">🗑️ Delete</button>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -224,5 +224,11 @@
         if (e.key === 'Escape') hideDeleteModal();
     });
 </script>
+</body>
+</html>          </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 </body>
 </html>

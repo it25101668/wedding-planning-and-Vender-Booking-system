@@ -68,59 +68,59 @@
 
         <table class="data-table" th:unless="${#lists.isEmpty(requests)}">
             <thead>
-            <tr>
-                <th>#</th>
-                <th>Full Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Requested</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Requested</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
             <tbody>
-            <tr th:each="req : ${requests}">
-                <td th:text="${req.id}"></td>
-                <td><strong th:text="${req.fullName}"></strong></td>
-                <td th:text="${req.username}"></td>
-                <td th:text="${req.email}"></td>
-                <td th:text="${req.phone != null ? req.phone : '-'}"></td>
-                <td style="white-space:nowrap;"
-                    th:text="${#temporals.format(req.requestedAt, 'dd MMM yyyy HH:mm')}"></td>
-                <td>
-                    <span class="badge badge-warning" th:if="${req.status == 'PENDING'}">⏳ Pending</span>
-                    <span class="badge badge-success" th:if="${req.status == 'APPROVED'}">✅ Approved</span>
-                    <span class="badge badge-danger"  th:if="${req.status == 'REJECTED'}">🚫 Rejected</span>
-                </td>
-                <td>
-                    <!-- Approve / Reject — PENDING only -->
-                    <div th:if="${req.status == 'PENDING'}" style="display:flex; gap:8px; flex-wrap:wrap;">
-                        <form th:action="@{/admin/registration-requests/approve/{id}(id=${req.id})}"
-                              method="post" style="margin:0;">
-                            <button type="submit" class="btn btn-success btn-sm"
-                                    onclick="return confirm('Approve this admin request?')">
-                                ✅ Approve
-                            </button>
-                        </form>
-                        <form th:action="@{/admin/registration-requests/reject/{id}(id=${req.id})}"
-                              method="post" style="margin:0;">
-                            <input type="hidden" name="note" value="Request rejected by Super Admin.">
-                            <button type="submit" class="btn btn-danger btn-sm"
-                                    onclick="return confirm('Reject this request?')">
-                                🚫 Reject
-                            </button>
-                        </form>
-                    </div>
-                    <!-- Already reviewed -->
-                    <span th:if="${req.status != 'PENDING'}" style="font-size:0.8rem; color:#aaa;">
+                <tr th:each="req : ${requests}">
+                    <td th:text="${req.id}"></td>
+                    <td><strong th:text="${req.fullName}"></strong></td>
+                    <td th:text="${req.username}"></td>
+                    <td th:text="${req.email}"></td>
+                    <td th:text="${req.phone != null ? req.phone : '-'}"></td>
+                    <td style="white-space:nowrap;"
+                        th:text="${#temporals.format(req.requestedAt, 'dd MMM yyyy HH:mm')}"></td>
+                    <td>
+                        <span class="badge badge-warning" th:if="${req.status == 'PENDING'}">⏳ Pending</span>
+                        <span class="badge badge-success" th:if="${req.status == 'APPROVED'}">✅ Approved</span>
+                        <span class="badge badge-danger"  th:if="${req.status == 'REJECTED'}">🚫 Rejected</span>
+                    </td>
+                    <td>
+                        <!-- Approve / Reject — PENDING only -->
+                        <div th:if="${req.status == 'PENDING'}" style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <form th:action="@{/admin/registration-requests/approve/{id}(id=${req.id})}"
+                                  method="post" style="margin:0;">
+                                <button type="submit" class="btn btn-success btn-sm"
+                                        onclick="return confirm('Approve this admin request?')">
+                                    ✅ Approve
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/registration-requests/reject/{id}(id=${req.id})}"
+                                  method="post" style="margin:0;">
+                                <input type="hidden" name="note" value="Request rejected by Super Admin.">
+                                <button type="submit" class="btn btn-danger btn-sm"
+                                        onclick="return confirm('Reject this request?')">
+                                    🚫 Reject
+                                </button>
+                            </form>
+                        </div>
+                        <!-- Already reviewed -->
+                        <span th:if="${req.status != 'PENDING'}" style="font-size:0.8rem; color:#aaa;">
                             Reviewed
                             <span th:if="${req.reviewedAt != null}"
                                   th:text="${#temporals.format(req.reviewedAt, 'dd MMM yyyy')}"></span>
                             <span th:if="${req.reviewedAt == null}">—</span>
                         </span>
-                </td>
-            </tr>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -143,35 +143,35 @@
 
         <table class="data-table" th:unless="${#lists.isEmpty(currentAdmins)}">
             <thead>
-            <tr>
-                <th>Full Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
             </thead>
             <tbody>
-            <tr th:each="adm : ${currentAdmins}">
-                <td><strong th:text="${adm.fullName != null ? adm.fullName : '-'}"></strong></td>
-                <td th:text="${adm.username}"></td>
-                <td th:text="${adm.email}"></td>
-                <td th:text="${adm.phone != null ? adm.phone : '-'}"></td>
-                <td>
-                    <span class="badge badge-success" th:if="${adm.active}">Active</span>
-                    <span class="badge badge-danger"  th:unless="${adm.active}">Inactive</span>
-                </td>
-                <td>
-                    <form th:action="@{/admin/registration-requests/remove-admin/{id}(id=${adm.id})}"
-                          method="post" style="margin:0;">
-                        <button type="submit" class="btn btn-danger btn-sm"
-                                onclick="return confirm('Remove this admin? They will lose access immediately.')">
-                            🗑 Remove Admin
-                        </button>
-                    </form>
-                </td>
-            </tr>
+                <tr th:each="adm : ${currentAdmins}">
+                    <td><strong th:text="${adm.fullName != null ? adm.fullName : '-'}"></strong></td>
+                    <td th:text="${adm.username}"></td>
+                    <td th:text="${adm.email}"></td>
+                    <td th:text="${adm.phone != null ? adm.phone : '-'}"></td>
+                    <td>
+                        <span class="badge badge-success" th:if="${adm.active}">Active</span>
+                        <span class="badge badge-danger"  th:unless="${adm.active}">Inactive</span>
+                    </td>
+                    <td>
+                        <form th:action="@{/admin/registration-requests/remove-admin/{id}(id=${adm.id})}"
+                              method="post" style="margin:0;">
+                            <button type="submit" class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Remove this admin? They will lose access immediately.')">
+                                🗑 Remove Admin
+                            </button>
+                        </form>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>

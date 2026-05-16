@@ -11,7 +11,7 @@
 <!-- SIDEBAR -->
 <div class="sidebar">
     <div class="sidebar-brand">💍 WedLux Admin</div>
-
+    
     <!-- Sidebar Profile Section -->
     <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;">
         <div style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
@@ -86,55 +86,55 @@
 
         <table class="data-table">
             <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Status</th>
-                <th>Joined</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
             <tbody>
-            <tr th:if="${#lists.isEmpty(customers)}">
-                <td colspan="8">
-                    <div class="empty-state">
-                        <div class="empty-icon">👥</div>
-                        <p>No customers have registered yet.</p>
-                    </div>
-                </td>
-            </tr>
-            <tr th:each="customer, stat : ${customers}">
-                <td th:text="${stat.count}"></td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#880E4F,#4A148C);
+                <tr th:if="${#lists.isEmpty(customers)}">
+                    <td colspan="8">
+                        <div class="empty-state">
+                            <div class="empty-icon">👥</div>
+                            <p>No customers have registered yet.</p>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:each="customer, stat : ${customers}">
+                    <td th:text="${stat.count}"></td>
+                    <td>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#880E4F,#4A148C);
                                         display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:0.85rem; flex-shrink:0; overflow:hidden;">
-                            <img th:if="${customer.profilePic != null}" th:src="@{${customer.profilePic}}" style="width:100%; height:100%; object-fit:cover;"/>
-                            <span th:unless="${customer.profilePic != null}" th:text="${#strings.substring(customer.firstName,0,1)}">A</span>
+                                <img th:if="${customer.profilePic != null}" th:src="@{${customer.profilePic}}" style="width:100%; height:100%; object-fit:cover;"/>
+                                <span th:unless="${customer.profilePic != null}" th:text="${customer.firstName != null and !customer.firstName.isEmpty() ? #strings.substring(customer.firstName,0,1) : 'C'}">A</span>
+                            </div>
+                            <div>
+                                <strong th:text="${customer.firstName + ' ' + customer.lastName}"></strong>
+                            </div>
                         </div>
-                        <div>
-                            <strong th:text="${customer.firstName + ' ' + customer.lastName}"></strong>
-                        </div>
-                    </div>
-                </td>
-                <td th:text="${customer.email}"></td>
-                <td th:text="${customer.phone ?: '-'}"></td>
-                <td th:text="${customer.address ?: '-'}"></td>
-                <td>
-                    <span class="badge badge-success" th:if="${customer.active}">Active</span>
-                    <span class="badge badge-danger"  th:unless="${customer.active}">Inactive</span>
-                </td>
-                <td style="font-size:0.82rem; color:#888;"
-                    th:text="${customer.createdAt != null ? #temporals.format(customer.createdAt, 'dd MMM yyyy') : '-'}">-</td>
-                <td>
-                    <a th:href="@{/admin/users/customers/edit/{id}(id=${customer.id})}" class="btn btn-sm">✏️ Edit</a>
-                    <a th:href="@{/admin/users/customers/delete/{id}(id=${customer.id})}" class="btn btn-sm btn-danger"
-                       onclick="return confirm('Delete this customer? This will also remove their bookings.')">🗑️ Delete</a>
-                </td>
-            </tr>
+                    </td>
+                    <td th:text="${customer.email}"></td>
+                    <td th:text="${customer.phone ?: '-'}"></td>
+                    <td th:text="${customer.address ?: '-'}"></td>
+                    <td>
+                        <span class="badge badge-success" th:if="${customer.active}">Active</span>
+                        <span class="badge badge-danger"  th:unless="${customer.active}">Inactive</span>
+                    </td>
+                    <td style="font-size:0.82rem; color:#888;"
+                        th:text="${customer.createdAt != null ? #temporals.format(customer.createdAt, 'dd MMM yyyy') : '-'}">-</td>
+                    <td>
+                        <a th:href="@{/admin/users/customers/edit/{id}(id=${customer.id})}" class="btn btn-sm">✏️ Edit</a>
+                        <a th:href="@{/admin/users/customers/delete/{id}(id=${customer.id})}" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Delete this customer? This will also remove their bookings.')">🗑️ Delete</a>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
