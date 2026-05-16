@@ -22,8 +22,11 @@
     </div>
     <div class="sidebar-section-label">My Account</div>
     <a href="/customer/dashboard" class="nav-link">🏠 Dashboard</a>
+    <a href="/customer/bookings"  class="nav-link">📅 My Bookings</a>
+    <a href="/customer/packages"  class="nav-link">🎁 Book a Package</a>
     <a href="/customer/profile"   class="nav-link active">⚙️ My Profile</a>
     <div class="sidebar-footer">
+        <a href="/"       class="nav-link">🌐 Public Site</a>
         <a href="/logout" class="nav-link">🚪 Logout</a>
     </div>
 </div>
@@ -33,6 +36,7 @@
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="text-align: right;">
                 <div style="font-weight:600; color:var(--dark-pink-shine); font-size: 0.9rem;" th:text="${customer.fullName}">Customer</div>
+                <div style="color:var(--shining-pink); font-size:0.65rem; font-weight:700; text-transform: uppercase;">Customer</div>
             </div>
             <div class="admin-avatar" style="width: 35px; height: 35px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #eee; border: 1px solid rgba(0,0,0,0.05);">
                 <img th:if="${customer?.profilePic != null}" th:src="@{${customer.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
@@ -51,14 +55,24 @@
                     <img th:if="${customer.profilePic != null}" th:src="@{${customer.profilePic}}" style="width:100%; height:100%; object-fit:cover;" alt="Profile Picture"/>
                     <span th:unless="${customer.profilePic != null}">💒</span>
                 </div>
-                <label for="customerProfilePic" style="position:absolute; bottom:4px; right:4px; background:var(--shining-pink); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.3); transition: all 0.3s; z-index: 10;">
+                <label for="customerProfilePic" style="position:absolute; bottom:4px; right:4px; background:var(--shining-pink); color:white; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid white; box-shadow:0 2px 8px rgba(0,0,0,0.3); transition: all 0.3s; z-index: 10;" onmouseover="this.style.transform='scale(1.1)'; this.style.background='var(--dark-pink-shine)'" onmouseout="this.style.transform='scale(1)'; this.style.background='var(--shining-pink)'">
                     📷
                 </label>
             </div>
             <div style="flex:1;">
-                <h3 style="font-family:'Playfair Display',serif; color:var(--dark-pink-shine); font-size:1.5rem; margin-bottom:4px;" th:text="${customer.fullName}"></h3>
-                <p style="color:#888; font-size:0.9rem; margin-bottom:8px;" th:text="${customer.email}"></p>
-                <span class="badge badge-pink">Customer</span>
+                <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+                    <div>
+                        <h3 style="font-family:'Playfair Display',serif; color:var(--dark-pink-shine); font-size:1.5rem; margin-bottom:4px;" th:text="${customer.fullName}"></h3>
+                        <p style="color:#888; font-size:0.9rem; margin-bottom:8px;" th:text="${customer.email}"></p>
+                        <span class="badge badge-pink">Customer</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('customerProfilePic').click()" style="margin-top: 5px;">
+                        🖼️ Change Image
+                    </button>
+                </div>
+                <p style="font-size: 0.75rem; color: #666; margin-top: 10px; background: rgba(173,20,87,0.03); padding: 5px 10px; border-radius: 6px; display: inline-block;">
+                    ✨ Click the <strong>camera</strong> or <strong>Change Image</strong> to set your photo
+                </p>
             </div>
         </div>
         <form action="/customer/profile/update" method="post" enctype="multipart/form-data">
@@ -93,6 +107,50 @@
                 <button type="submit" class="btn">💾 Update Profile</button>
             </div>
         </form>
+    </div>
+
+    <!-- My Booked Packages Section -->
+    <div class="section-card" style="max-width:650px; margin-top:24px;">
+        <h2 style="font-family:'Playfair Display',serif; color:var(--dark-pink-shine); font-size:1.4rem; margin-bottom:18px; border-bottom:1px solid rgba(173,20,87,0.1); padding-bottom:12px;">
+            🎁 My Booked Packages
+        </h2>
+
+        <div th:if="${#lists.isEmpty(bookings.?[weddingPackage != null])}" class="empty-state" style="padding:30px 0;">
+            <div class="empty-icon" style="font-size:2rem;">💍</div>
+            <p style="font-size:0.9rem;">You haven't booked any packages yet.</p>
+            <a href="/customer/packages" class="btn btn-sm" style="margin-top:12px;">Browse Packages</a>
+        </div>
+
+        <div th:each="booking : ${bookings.?[weddingPackage != null]}" 
+             style="background:rgba(173,20,87,0.03); border:1px solid rgba(173,20,87,0.1); border-radius:14px; padding:20px; margin-bottom:16px;">
+            
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                <div>
+                    <h4 style="font-family:'Playfair Display',serif; color:var(--dark-pink-shine); font-size:1.2rem; margin:0;" 
+                        th:text="${booking.weddingPackage.name}"></h4>
+                    <div style="font-size:0.8rem; color:#888; margin-top:4px;">
+                        Event Date: <strong th:text="${booking.eventDate}"></strong>
+                    </div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:1.15rem; font-weight:700; color:var(--shining-pink);">
+                        LKR <span th:text="${#numbers.formatDecimal(booking.weddingPackage.price, 0, 'COMMA', 0, 'POINT')}"></span>
+                    </div>
+                    <span class="badge" th:text="${booking.status}"
+                          th:classappend="${booking.status == 'Confirmed'} ? 'badge-success' : 'badge-warning'"></span>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:12px; font-size:0.82rem; color:#666; margin-bottom:12px; flex-wrap:wrap;">
+                <span th:if="${booking.weddingPackage.location != null}">📍 <span th:text="${booking.weddingPackage.location}"></span></span>
+                <span th:if="${booking.weddingPackage.duration != null}">⏱ <span th:text="${booking.weddingPackage.duration}"></span></span>
+                <span th:if="${booking.venue != null}">🏛 Venue: <span th:text="${booking.venue}"></span></span>
+            </div>
+
+            <div style="border-top:1px solid rgba(0,0,0,0.05); padding-top:12px; display:flex; justify-content:flex-end;">
+                <a th:href="@{/customer/packages/{id}(id=${booking.weddingPackage.id})}" class="btn btn-outline btn-sm">View Package Details</a>
+            </div>
+        </div>
     </div>
 </div>
 </body>
