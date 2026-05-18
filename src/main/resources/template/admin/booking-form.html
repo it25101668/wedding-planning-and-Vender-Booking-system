@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${formTitle} + ' – Booking System Admin'">Booking Form</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand">💍 Booking & Payment System</div>
+    <div class="sidebar-section-label">Management</div>
+    <a href="/admin/dashboard" class="nav-link">🏠 Dashboard</a>
+    <a href="/admin/users"    class="nav-link">👤 User Management</a>
+    <a href="/admin/users/customers" class="nav-link">👥 Customers</a>
+    <a href="/admin/vendors"  class="nav-link">🏪 Vendor Management</a>
+    <a href="/admin/packages" class="nav-link">📦 Package Management</a>
+    <a href="/admin/bookings" class="nav-link active">📅 Booking System</a>
+    <a href="/admin/reports"  class="nav-link">📊 Report Management</a>
+    <div class="sidebar-section-label">Account</div>
+    <a href="/admin/profile"  class="nav-link">⚙️ Profile</a>
+    <div class="sidebar-footer"><a href="/logout" class="nav-link">🚪 Logout</a></div>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1 th:text="${formTitle}">Booking Form</h1>
+        <a href="/admin/bookings" class="btn btn-outline">← Back to Bookings</a>
+    </div>
+    <div class="section-card">
+        <div class="form-container" style="max-width:800px;">
+            <form th:action="${formAction}" th:object="${booking}" method="post" id="bookingForm">
+                <input type="hidden" th:field="*{id}">
+                
+                <div class="form-grid">
+                    <!-- Customer Name -->
+                    <div class="form-group">
+                        <label>Customer Name *</label>
+                        <input type="text" th:field="*{customerName}" required placeholder="Full Name">
+                    </div>
+
+                    <!-- Customer Email -->
+                    <div class="form-group">
+                        <label>Customer Email *</label>
+                        <input type="email" th:field="*{customerEmail}" required placeholder="Email Address">
+                    </div>
+
+                    <!-- Package Name -->
+                    <div class="form-group">
+                        <label>Package Name</label>
+                        <input type="text" th:field="*{packageName}" placeholder="e.g. Gold Wedding Package">
+                    </div>
+
+                    <!-- Event Date -->
+                    <div class="form-group">
+                        <label>Event Date *</label>
+                        <input type="date" th:field="*{eventDate}" required>
+                    </div>
+
+                    <!-- Guest Count -->
+                    <div class="form-group">
+                        <label>Guest Count</label>
+                        <input type="number" th:field="*{guestCount}" placeholder="e.g. 150">
+                    </div>
+
+                    <!-- Total Amount -->
+                    <div class="form-group">
+                        <label>Total Amount (LKR)</label>
+                        <input type="number" step="0.01" th:field="*{totalAmount}" placeholder="Total cost">
+                    </div>
+
+                    <!-- Status -->
+                    <div class="form-group">
+                        <label>Booking Status</label>
+                        <select th:field="*{status}">
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <!-- Payment Status -->
+                    <div class="form-group">
+                        <label>Payment Status</label>
+                        <select th:field="*{paymentStatus}">
+                            <option value="Unpaid">Unpaid</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Partial">Partial</option>
+                        </select>
+                    </div>
+
+                    <!-- Venue -->
+                    <div class="form-group full-width">
+                        <label>Venue</label>
+                        <input type="text" th:field="*{venue}" placeholder="Event venue">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="form-group full-width">
+                        <label>Notes</label>
+                        <textarea th:field="*{notes}" placeholder="Additional notes..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/admin/bookings" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn">💾 Save Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
