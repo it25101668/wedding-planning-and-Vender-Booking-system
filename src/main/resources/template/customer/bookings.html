@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings – Booking System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body style="display: block; overflow-y: auto;">
+    <div class="main-content" style="padding: 50px 20px; max-width: 1000px; margin: 0 auto;">
+        <div class="page-header">
+            <h1>📅 My Booking History</h1>
+            <a href="/customer/book" class="btn">+ New Booking</a>
+        </div>
+
+        <div class="section-card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Event Date</th>
+                        <th>Package</th>
+                        <th>Venue</th>
+                        <th>Status</th>
+                        <th>Payment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${#lists.isEmpty(bookings)}">
+                        <td colspan="6" style="text-align: center; padding: 40px;">
+                            <p style="color: #999;">You haven't made any bookings yet.</p>
+                        </td>
+                    </tr>
+                    <tr th:each="booking, stat : ${bookings}">
+                        <td th:text="${stat.count}"></td>
+                        <td th:text="${booking.eventDate}"></td>
+                        <td th:text="${booking.packageName ?: 'Custom'}"></td>
+                        <td th:text="${booking.venue ?: '-'}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${'badge-' + booking.status.toLowerCase()}" th:text="${booking.status}"></span>
+                        </td>
+                        <td>
+                            <span class="badge" th:classappend="${booking.paymentStatus == 'Paid'} ? 'badge-success' : 'badge-warning'" th:text="${booking.paymentStatus}"></span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
