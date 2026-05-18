@@ -29,6 +29,11 @@ The system is divided into 6 core parts, with each of our 6 team members taking 
 5. **Vendor_Management_System_Entry** - Handles vendor registration, service listings, and vendor dashboards.
 6. **wedding-planning-and-Vender-Booking-system** - The core integration module that ties all system components together.
 
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+
 ## 💻 Tech Stack
 
 * **Language:** Java 17
