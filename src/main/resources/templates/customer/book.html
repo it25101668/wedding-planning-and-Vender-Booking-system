@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Package – Wedding Management System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .date-blocked-msg {
+            display: none;
+            margin-top: 8px;
+            background: rgba(231,76,60,0.1);
+            border-left: 3px solid #e74c3c;
+            border-radius: 8px;
+            padding: 9px 13px;
+            font-size: 0.82rem;
+            color: #c0392b;
+            font-weight: 500;
+        }
+        .date-ok-msg {
+            display: none;
+            margin-top: 8px;
+            background: rgba(46,204,113,0.1);
+            border-left: 3px solid #27ae60;
+            border-radius: 8px;
+            padding: 9px 13px;
+            font-size: 0.82rem;
+            color: #1e8449;
+            font-weight: 500;
+        }
+        input[type="date"].blocked {
+            border-color: #e74c3c !important;
+            background: rgba(231,76,60,0.05) !important;
+        }
+        .date-hint {
+            font-size: 0.74rem;
+            color: #aaa;
+            margin-top: 4px;
+            display: block;
+        }
+
+        /* ── Payment Success Modal ── */
+        .payment-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .payment-modal-card {
+            background: white;
+            width: 420px;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .success-icon {
+            width: 60px;
+            height: 60px;
+            background: #27ae60;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 20px;
+        }
+        .receipt-details {
+            text-align: left;
+            margin: 30px 0;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 0.85rem;
+        }
+        .receipt-label { color: #888; }
+        .receipt-value { font-weight: 600; color: #333; }
+        .receipt-total {
+            margin-top: 15px;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark-pink-shine);
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar" style="background: linear-gradient(180deg, #880E4F 0%, #4A148C 100%);">
+    <div class="sidebar-brand">💒 My Wedding Portal</div>
+    <div class="sidebar-section-label">My Account</div>
+    <a href="/customer/dashboard"  class="nav-link">🏠 Dashboard</a>
+    <a href="/customer/bookings"   class="nav-link">📅 My Bookings</a>
+    <a href="/customer/packages"   class="nav-link active">🎁 Book a Package</a>
+    <a href="/customer/profile"    class="nav-link">⚙️ My Profile</a>
+    <div class="sidebar-footer">
+        <a href="/"       class="nav-link">🌐 Public Site</a>
+        <a href="/logout" class="nav-link">🚪 Logout</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <h1>Complete Your Booking</h1>
+        <a href="/customer/packages" class="btn btn-outline btn-sm">← Back to Packages</a>
+    </div>
+
+    <div th:if="${errorMsg}" class="alert alert-danger">
+        <span>⚠️</span><span th:text="${errorMsg}"></span>
+    </div>
+
+    <div style="display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap;">
+
+        <!-- ── Package Details (read-only) ──────────────────── -->
+        <div class="section-card" style="flex:1; min-width:280px;">
+            <div style="display:inline-block; background:rgba(173,20,87,0.1); color:var(--primary-pink);
+                        padding:4px 14px; border-radius:50px; font-size:0.72rem; font-weight:700;
+                        margin-bottom:14px; text-transform:uppercase; letter-spacing:0.8px;">
+                Selected Package
+            </div>
+
+            <h2 style="font-family:'Playfair Display',serif; color:var(--dark-pink-shine);
+                       font-size:1.5rem; margin-bottom:10px;"
+                th:text="${weddingPackage.name}">Package Name</h2>
+
+            <div style="font-size:1.7rem; font-weight:700; color:var(--shining-pink); margin-bottom:16px;">
+                <span style="font-size:0.95rem; color:#888;">LKR </span>
+                <span th:text="${#numbers.formatDecimal(weddingPackage.price, 0, 'COMMA', 0, 'POINT')}">0</span>
+            </div>
+
+            <p style="color:#555; font-size:0.88rem; line-height:1.65; margin-bottom:16px;"
+               th:text="${weddingPackage.description}"></p>
+
+            <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;">
+                <div th:if="${weddingPackage.duration != null}"
+                     style="display:flex; justify-content:space-between; font-size:0.85rem; padding:8px 12px; background:#f9f0f4; border-radius:8px;">
+                    <span style="color:#888; font-weight:600;">⏱ Duration</span>
+                    <span style="color:var(--dark-pink-shine); font-weight:600;" th:text="${weddingPackage.duration}"></span>
+                </div>
+                <div th:if="${weddingPackage.maxGuests != null}"
+                     style="display:flex; justify-content:space-between; font-size:0.85rem; padding:8px 12px; background:#f9f0f4; border-radius:8px;">
+                    <span style="color:#888; font-weight:600;">👥 Max Guests</span>
+                    <span style="color:var(--dark-pink-shine); font-weight:600;" th:text="${weddingPackage.maxGuests} + ' guests'"></span>
+                </div>
+                <div th:if="${weddingPackage.location != null}"
+                     style="display:flex; justify-content:space-between; font-size:0.85rem; padding:8px 12px; background:#f9f0f4; border-radius:8px;">
+                    <span style="color:#888; font-weight:600;">📍 Location</span>
+                    <span style="color:var(--dark-pink-shine); font-weight:600;" th:text="${weddingPackage.location}"></span>
+                </div>
+            </div>
+
+            <div th:if="${weddingPackage.inclusions != null and !#strings.isEmpty(weddingPackage.inclusions)}">
+                <div style="font-size:0.72rem; font-weight:700; color:var(--dark-pink-shine);
+                            text-transform:uppercase; letter-spacing:0.8px; margin-bottom:8px;">
+                    What's Included
+                </div>
+                <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:5px;">
+                    <li th:each="item : ${#strings.arraySplit(weddingPackage.inclusions, ',')}"
+                        style="font-size:0.85rem; color:#444; display:flex; gap:8px; align-items:baseline;">
+                        <span style="color:var(--primary-pink); font-weight:700;">✓</span>
+                        <span th:text="${#strings.trim(item)}"></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ── Booking Form ───────────────────────────────── -->
+        <div class="section-card" style="flex:0.8; min-width:260px;">
+            <h2 style="margin-bottom:6px; font-size:1.1rem; color:var(--dark-pink-shine);">📅 Choose Your Event Date</h2>
+            <p style="font-size:0.82rem; color:#999; margin-bottom:18px;">
+                All other package details are fixed as shown. Only select your preferred event date.
+            </p>
+
+            <!-- Availability loading indicator -->
+            <div id="loadingMsg" style="font-size:0.8rem; color:#aaa; margin-bottom:10px;">
+                ⏳ Checking availability…
+            </div>
+
+            <form th:action="@{/customer/book/process}" method="post" id="bookForm">
+                <input type="hidden" name="packageId" th:value="${weddingPackage.id}" />
+                <input type="hidden" name="transactionId" id="transactionIdInput" />
+
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label for="eventDate" style="font-weight:600; font-size:0.88rem;">Event Date *</label>
+                    <input type="date" id="eventDate" name="eventDate" required
+                           style="font-size:1rem; padding:12px 16px;"
+                           onchange="onDateChange(this.value)" />
+                    <span class="date-hint">Already booked dates will be flagged automatically.</span>
+
+                    <div class="date-blocked-msg" id="dateBlockedMsg">
+                        ⛔ <strong>This date is already booked</strong> for this package.
+                        Please choose a different date.
+                    </div>
+                    <div class="date-ok-msg" id="dateOkMsg">
+                        ✅ This date is available! You can proceed with your booking.
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="form-group" style="margin-bottom:20px;">
+                    <label for="paymentMethod" style="font-weight:600; font-size:0.88rem;">Payment Method *</label>
+                    <select id="paymentMethod" name="paymentMethod" required 
+                            style="font-size:1rem; padding:12px 16px;" 
+                            onchange="onPaymentMethodChange(this.value)">
+                        <option value="Cash">Cash Payment</option>
+                        <option value="Card">Card Payment</option>
+                        <option value="Koko">Koko (3 Installments)</option>
+                    </select>
+                    
+                    <div id="kokoBreakdown" style="display:none; margin-top:12px; padding:15px; background:rgba(123,31,162,0.05); border:1px dashed #7B1FA2; border-radius:10px;">
+                        <div style="color:#7B1FA2; font-weight:700; font-size:0.85rem; margin-bottom:8px;">💳 Koko Payment Plan (3 Months)</div>
+                        <div style="margin-bottom:10px; font-size:0.78rem; color:#d81b60; background:#fce4ec; padding:6px 10px; border-radius:6px; border-left:3px solid #d81b60;">
+                            <strong>Note:</strong> A 10% service fee is added for Koko installments.
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                                <span style="color:#666;">Original Price</span>
+                                <span style="font-weight:500; color:#888; text-decoration:line-through;">LKR <span th:text="${#numbers.formatDecimal(weddingPackage.price, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                                <span style="color:#666;">Total (Incl. 10% Fee)</span>
+                                <span style="font-weight:700; color:#7B1FA2;">LKR <span th:text="${#numbers.formatDecimal(weddingPackage.price * 1.1, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                            </div>
+                            <hr style="border:0; border-top:1px solid rgba(0,0,0,0.05); margin:5px 0;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                                <span style="color:#666;">1st Installment (Today)</span>
+                                <span style="font-weight:700; color:#7B1FA2;">LKR <span th:text="${#numbers.formatDecimal(weddingPackage.price * 1.1 / 3.0, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                                <span style="color:#666;">2nd Installment (Month 2)</span>
+                                <span style="font-weight:700; color:#7B1FA2;">LKR <span th:text="${#numbers.formatDecimal(weddingPackage.price * 1.1 / 3.0, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:0.82rem;">
+                                <span style="color:#666;">3rd Installment (Month 3)</span>
+                                <span style="font-weight:700; color:#7B1FA2;">LKR <span th:text="${#numbers.formatDecimal(weddingPackage.price * 1.1 / 3.0, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                            </div>
+                        </div>
+                        <p style="font-size:0.7rem; color:#888; margin-top:10px; border-top:1px solid rgba(0,0,0,0.05); padding-top:8px;">
+                            Total split into 3 monthly payments. 10% handling fee included.
+                        </p>
+                    </div>
+
+                    <!-- Card Details Section -->
+                    <div id="cardDetails" style="display:none; margin-top:12px; padding:20px; background:rgba(0,0,0,0.02); border:1px solid #ddd; border-radius:12px;">
+                        <div style="color:var(--dark-pink-shine); font-weight:700; font-size:0.85rem; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                            💳 Secure Bank/Card Payment
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label style="font-size:0.75rem; color:#666; font-weight:600;">Bank Name</label>
+                                <input type="text" id="bankName" placeholder="e.g. BOC, Sampath, HNB" style="padding:10px; font-size:0.85rem;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label style="font-size:0.75rem; color:#666; font-weight:600;">Cardholder Name</label>
+                                <input type="text" id="cardHolder" placeholder="Name as on card" style="padding:10px; font-size:0.85rem;">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label style="font-size:0.75rem; color:#666; font-weight:600;">Bank / Card Number</label>
+                                <input type="text" id="cardNo" placeholder="**** **** **** ****" style="padding:10px; font-size:0.85rem;">
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label style="font-size:0.75rem; color:#666; font-weight:600;">Expiry Date</label>
+                                    <input type="text" id="expDate" placeholder="MM/YY" style="padding:10px; font-size:0.85rem;">
+                                </div>
+                                <div class="form-group" style="margin-bottom:0;">
+                                    <label style="font-size:0.75rem; color:#666; font-weight:600;">CVC / CVV</label>
+                                    <input type="password" id="cvc" placeholder="***" style="padding:10px; font-size:0.85rem;">
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label style="font-size:0.75rem; color:#666; font-weight:600;">Payable Amount (LKR)</label>
+                                <input type="text" th:value="${#numbers.formatDecimal(weddingPackage.price, 0, 'COMMA', 2, 'POINT')}" readonly 
+                                       style="padding:10px; font-size:0.95rem; font-weight:700; background:#f0f0f0; color:var(--dark-pink-shine);">
+                            </div>
+                        </div>
+
+                        <!-- Verify Button -->
+                        <button type="button" onclick="verifyPayment()" id="verifyBtn" 
+                                style="margin-top:20px; width:100%; padding:12px; border-radius:10px; background:#2E7D32; color:white; border:none; font-weight:700; cursor:pointer; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:8px;">
+                            🛡️ Verify Payment
+                        </button>
+                        
+                        <div id="paymentVerifiedMsg" style="display:none; margin-top:12px; text-align:center; color:#2E7D32; font-weight:700; font-size:0.85rem; animation:fadeIn 0.5s ease;">
+                            ✅ Payment Verified Successfully!
+                        </div>
+
+                        <div style="margin-top:15px; font-size:0.68rem; color:#999; display:flex; align-items:center; gap:6px;">
+                            🔒 Your payment details are encrypted and secure.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Summary -->
+                <div style="background:#f9f0f4; border-radius:10px; padding:14px 16px; margin-bottom:20px; font-size:0.85rem;">
+                    <div style="font-weight:700; color:var(--dark-pink-shine); margin-bottom:8px;">Booking Summary</div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span style="color:#666;">Package</span>
+                        <span style="font-weight:600;" th:text="${weddingPackage.name}"></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span style="color:#666;">Price</span>
+                        <span style="font-weight:700; color:var(--shining-pink);">
+                            LKR <span th:text="${#numbers.formatDecimal(weddingPackage.price, 0, 'COMMA', 0, 'POINT')}"></span>
+                        </span>
+                    </div>
+                    <div th:if="${weddingPackage.location != null}" style="display:flex; justify-content:space-between;">
+                        <span style="color:#666;">Location</span>
+                        <span style="font-weight:600;" th:text="${weddingPackage.location}"></span>
+                    </div>
+                </div>
+
+                <div style="background:rgba(243,156,18,0.09); border-left:4px solid #f39c12;
+                            padding:10px 14px; border-radius:8px; font-size:0.8rem;
+                            color:#c0781a; margin-bottom:20px;">
+                    <strong>Note:</strong> Your booking will be <strong>Pending</strong> until our team confirms. We will reach out to you.
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn" style="width:100%; justify-content:center;">
+                    💍 Confirm Booking Request
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden element carries the package ID for JS -->
+<div id="pkgIdHolder" th:data-pkg-id="${weddingPackage.id}" style="display:none"></div>
+
+<!-- ══ PAYMENT SUCCESS MODAL ══════════════════════════════════════ -->
+<div class="payment-modal-overlay" id="paymentSuccessModal">
+    <div class="payment-modal-card">
+        <div class="success-icon">✓</div>
+        <h2 style="color:#27ae60; font-family:'Playfair Display', serif; margin-bottom:5px;">Payment successful</h2>
+        <p style="color:#666; font-size:0.9rem;">Your transaction was completed successfully.</p>
+        
+        <div class="receipt-details">
+            <div class="receipt-row">
+                <span class="receipt-label">Payment type</span>
+                <span class="receipt-value">Net banking / Card</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Bank</span>
+                <span class="receipt-value" id="modalBankName">-</span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Mobile</span>
+                <span class="receipt-value" th:text="${customer?.phone ?: 'N/A'}"></span>
+            </div>
+            <div class="receipt-row">
+                <span class="receipt-label">Email</span>
+                <span class="receipt-value" th:text="${customer?.email}"></span>
+            </div>
+            <div class="receipt-row receipt-total">
+                <span class="receipt-label" style="color:inherit;">Amount paid</span>
+                <span class="receipt-value" style="color:inherit;">LKR <span th:text="${#numbers.formatDecimal(weddingPackage.price, 0, 'COMMA', 2, 'POINT')}"></span></span>
+            </div>
+            <div class="receipt-row" style="margin-top:15px;">
+                <span class="receipt-label">Transaction id</span>
+                <span class="receipt-value" id="modalTxnId">125478965698</span>
+            </div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <a id="downloadSlipBtn" href="#" class="btn btn-outline" style="width:100%; justify-content:center; text-decoration:none;">DOWNLOAD PDF</a>
+            <button class="btn" style="width:100%; justify-content:center; background:#0288d1; border-color:#0288d1;" onclick="closePaymentModal()">CLOSE</button>
+        </div>
+    </div>
+</div>
+
+<script>
+var bookedDates   = [];
+var dateIsBlocked = false;
+
+/* Fetch booked dates immediately on page load */
+(function () {
+    var pkgId = document.getElementById('pkgIdHolder').getAttribute('data-pkg-id');
+    if (!pkgId) { document.getElementById('loadingMsg').style.display = 'none'; return; }
+
+    fetch('/customer/booked-dates?packageId=' + pkgId)
+        .then(function (r) { return r.json(); })
+        .then(function (dates) {
+            bookedDates = dates;
+            document.getElementById('loadingMsg').style.display = 'none';
+            // Re-validate if browser pre-filled the date field
+            var v = document.getElementById('eventDate').value;
+            if (v) onDateChange(v);
+        })
+        .catch(function () {
+            document.getElementById('loadingMsg').style.display = 'none';
+        });
+})();
+
+function onDateChange(val) {
+    var blockedMsg = document.getElementById('dateBlockedMsg');
+    var okMsg      = document.getElementById('dateOkMsg');
+    var dateInput  = document.getElementById('eventDate');
+    var submitBtn  = document.getElementById('submitBtn');
+
+    if (!val) {
+        blockedMsg.style.display = 'none';
+        okMsg.style.display      = 'none';
+        dateInput.classList.remove('blocked');
+        submitBtn.disabled       = false;
+        submitBtn.style.opacity  = '1';
+        return;
+    }
+
+    var blocked = bookedDates.indexOf(val) !== -1;
+    dateIsBlocked = blocked;
+
+    blockedMsg.style.display = blocked ? 'block' : 'none';
+    okMsg.style.display      = blocked ? 'none'  : 'block';
+    dateInput.classList.toggle('blocked', blocked);
+    submitBtn.disabled       = blocked;
+    submitBtn.style.opacity  = blocked ? '0.5' : '1';
+}
+
+function onPaymentMethodChange(val) {
+    var kokoBox = document.getElementById('kokoBreakdown');
+    var cardBox = document.getElementById('cardDetails');
+    var txnInput = document.getElementById('transactionIdInput');
+    var verifiedMsg = document.getElementById('paymentVerifiedMsg');
+    
+    if (kokoBox) kokoBox.style.display = (val === 'Koko') ? 'block' : 'none';
+    if (cardBox) cardBox.style.display = (val === 'Card') ? 'block' : 'none';
+    
+    // Reset verification if method changes
+    if (txnInput) txnInput.value = '';
+    if (verifiedMsg) verifiedMsg.style.display = 'none';
+    
+    var verifyBtn = document.getElementById('verifyBtn');
+    if (verifyBtn) {
+        verifyBtn.innerHTML = "🛡️ Verify Payment";
+        verifyBtn.disabled = false;
+        verifyBtn.style.opacity = "1";
+        verifyBtn.style.background = "#2E7D32";
+    }
+}
+
+function verifyPayment() {
+    var bank = document.getElementById('bankName').value;
+    var holder = document.getElementById('cardHolder').value;
+    var card = document.getElementById('cardNo').value;
+    var exp = document.getElementById('expDate').value;
+    var cvc = document.getElementById('cvc').value;
+    
+    if(!bank || !holder || !card || !exp || !cvc) {
+        alert("⚠️ Please fill in all bank/card details before verifying.");
+        return;
+    }
+    
+    var btn = document.getElementById('verifyBtn');
+    btn.innerHTML = "🛡️ Verifying with Bank...";
+    btn.disabled = true;
+    btn.style.opacity = "0.7";
+    
+    setTimeout(function() {
+        btn.innerHTML = "🛡️ Verified";
+        btn.style.background = "#1B5E20";
+        document.getElementById('paymentVerifiedMsg').style.display = 'block';
+        
+        var generatedId = Math.floor(Math.random() * 9000000000) + 1000000000;
+        
+        // Set hidden field for form submission
+        document.getElementById('transactionIdInput').value = generatedId;
+        
+        // Populate and show custom success modal
+        document.getElementById('modalBankName').innerText = bank;
+        document.getElementById('modalTxnId').innerText = generatedId;
+        
+        // Set up download link
+        var pkgPrice = "[[${weddingPackage.price}]]";
+        var downloadUrl = "/customer/payment/download-slip?bank=" + encodeURIComponent(bank) + 
+                          "&txnId=" + generatedId + 
+                          "&amount=" + pkgPrice;
+        document.getElementById('downloadSlipBtn').href = downloadUrl;
+        
+        document.getElementById('paymentSuccessModal').style.display = 'flex';
+    }, 1500);
+}
+
+function closePaymentModal() {
+    document.getElementById('paymentSuccessModal').style.display = 'none';
+}
+
+/* Final guard — prevents submit even if JS was partially bypassed */
+document.getElementById('bookForm').addEventListener('submit', function (e) {
+    if (dateIsBlocked) {
+        e.preventDefault();
+        document.getElementById('dateBlockedMsg').scrollIntoView({ behavior: 'smooth' });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Your Wedding – Booking System</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body style="display: block; overflow-y: auto;">
+    <div class="main-content" style="padding: 50px 20px; max-width: 900px; margin: 0 auto;">
+        <div class="page-header" style="text-align: center; display: block; margin-bottom: 40px;">
+            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">✨ Plan Your Dream Wedding</h1>
+            <p style="color: #666;">Fill in the details below to secure your booking.</p>
+        </div>
+
+        <div class="section-card">
+            <form action="/customer/bookings/save" method="post" class="form-container">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Your Name *</label>
+                        <input type="text" name="customerName" required placeholder="Full Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Your Email *</label>
+                        <input type="email" name="customerEmail" required placeholder="Email Address">
+                    </div>
+                    <div class="form-group">
+                        <label>Event Date *</label>
+                        <input type="date" name="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Guest Count</label>
+                        <input type="number" name="guestCount" placeholder="Estimated guests">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Venue</label>
+                        <input type="text" name="venue" placeholder="Preferred location">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Notes / Special Requests</label>
+                        <textarea name="notes" placeholder="Tell us more about your vision..."></textarea>
+                    </div>
+                </div>
+                <div class="form-actions" style="justify-content: center; margin-top: 40px;">
+                    <button type="submit" class="btn btn-lg" style="padding: 15px 40px; font-size: 1.1rem;">Confirm Booking ✨</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
