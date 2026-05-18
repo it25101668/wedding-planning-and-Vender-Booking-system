@@ -5,10 +5,18 @@
 For further reference, please consider the following sections:
 
 * [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/4.0.6/maven-plugin)
-* [Create an OCI image](https://docs.spring.io/spring-boot/4.0.6/maven-plugin/build-image.html)
-* [Spring Configuration Processor](https://docs.spring.io/spring-boot/4.0.6/specification/configuration-metadata/annotation-processor.html)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/4.0.6/reference/using/devtools.html)
+* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/4.0.3/maven-plugin)
+* [Create an OCI image](https://docs.spring.io/spring-boot/4.0.3/maven-plugin/build-image.html)
+* [Spring Boot DevTools](https://docs.spring.io/spring-boot/4.0.3/reference/using/devtools.html)
+* [Spring Session for JDBC](https://docs.spring.io/spring-session/reference/)
+* [Thymeleaf](https://docs.spring.io/spring-boot/4.0.3/reference/web/servlet.html#web.servlet.spring-mvc.template-engines)
+
+### Guides
+
+The following guides illustrate how to use some features concretely:
+
+* [Accessing data with MySQL](https://spring.io/guides/gs/accessing-data-mysql/)
+* [Handling Form Submission](https://spring.io/guides/gs/handling-form-submission/)
 
 ### Maven Parent overrides
 
