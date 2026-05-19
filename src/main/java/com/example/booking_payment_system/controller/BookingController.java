@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.List;
 
-@Controller
+@Controller //handle request
 public class BookingController {
 
     @Autowired
