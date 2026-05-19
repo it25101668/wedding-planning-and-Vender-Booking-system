@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard – WMS Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-brand">💍 WedLux Admin</div>
+    
+    <!-- Sidebar Profile Section -->
+    <div style="padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 10px; display: flex; align-items: center; gap: 12px;">
+        <div style="width: 42px; height: 42px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(255,255,255,0.2); flex-shrink: 0; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center;">
+            <img th:if="${adminUser?.profilePic != null}" th:src="@{${adminUser.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+            <span th:unless="${adminUser?.profilePic != null}" style="font-size: 1.2rem;">👑</span>
+        </div>
+        <div style="overflow: hidden;">
+            <div style="color: white; font-size: 0.88rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${adminUser?.fullName ?: adminUser?.username}">Admin</div>
+            <div style="color: rgba(255,255,255,0.5); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Administrator</div>
+        </div>
+    </div>
+    <div class="sidebar-section-label">Management</div>
+    <a href="/admin/dashboard" class="nav-link active">🏠 Dashboard</a>
+    <a href="/admin/users"    class="nav-link">👤 User Management</a>
+    <a href="/admin/users/customers" class="nav-link">👥 Customers</a>
+    <a href="/admin/vendors"  class="nav-link">🏪 Vendor Management</a>
+    <a href="/admin/packages" class="nav-link">📦 Package Management</a>
+    <a href="/admin/bookings" class="nav-link">📅 Booking System</a>
+    <a href="/admin/reports"  class="nav-link">📊 Report Management</a>
+    <!-- Only Super Admin sees this link -->
+    <a th:if="${session.isSuperAdmin}" href="/admin/registration-requests" class="nav-link"
+       style="display:flex; justify-content:space-between; align-items:center;">
+        <span>📋 Admin Requests</span>
+        <span th:if="${pendingAdminRequests > 0}"
+              th:text="${pendingAdminRequests}"
+              style="background:#FF4081; color:#fff; font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:50px; min-width:20px; text-align:center;"></span>
+    </a>
+    <div class="sidebar-section-label">Account</div>
+    <a href="/admin/profile"  class="nav-link">⚙️ My Profile</a>
+    <div class="sidebar-footer">
+        <a href="/" class="nav-link">🌐 Public Site</a>
+        <a href="/logout" class="nav-link">🚪 Logout</a>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <h1>Centralized Dashboard</h1>
+            <p style="color:#888; font-size:0.82rem; margin-top:4px;">Welcome back! Here's a snapshot of your wedding management system.</p>
+        </div>
+        <div class="page-header-right">
+            <span style="font-weight:600; color:var(--dark-pink-shine);"
+                  th:text="${adminUser != null ? adminUser.fullName ?: adminUser.username : 'Administrator'}">Administrator</span>
+            <span th:if="${session.isSuperAdmin}"
+                  style="background:linear-gradient(135deg,#FF4081,#7B1FA2); color:#fff; font-size:0.65rem; font-weight:700; padding:2px 9px; border-radius:50px; letter-spacing:0.5px;">SUPER ADMIN</span>
+            <div class="admin-avatar" style="width: 35px; height: 35px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #eee; border: 1px solid rgba(0,0,0,0.05);" title="Admin">
+                <img th:if="${adminUser?.profilePic != null}" th:src="@{${adminUser.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+                <span th:unless="${adminUser?.profilePic != null}">👑</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    <div th:if="${successMsg}" class="alert alert-success"><span>✅</span><span th:text="${successMsg}"></span></div>
+    <div th:if="${errorMsg}"   class="alert alert-danger"><span>⚠️</span><span th:text="${errorMsg}"></span></div>
+
+    <!-- ── STAT CARDS ── -->
+    <div class="stat-cards">
+        <div class="stat-card" onclick="location.href='/admin/users'" style="border-bottom-color:#AD1457;">
+            <div class="stat-icon">👤</div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value" th:text="${totalUsers ?: 0}">0</div>
+            <div class="stat-sub">Registered admins</div>
+        </div>
+        <div class="stat-card" onclick="location.href='/admin/vendors'" style="border-bottom-color:#7B1FA2;">
+            <div class="stat-icon">🏪</div>
+            <div class="stat-label">Vendors</div>
+            <div class="stat-value" th:text="${totalVendors ?: 0}">0</div>
+            <div class="stat-sub">Active partners</div>
+        </div>
+        <div class="stat-card" onclick="location.href='/admin/packages'" style="border-bottom-color:#D81B60;">
+            <div class="stat-icon">📦</div>
+            <div class="stat-label">Packages</div>
+            <div class="stat-value" th:text="${totalPackages ?: 0}">0</div>
+            <div class="stat-sub">Wedding packages</div>
+        </div>
+        <div class="stat-card" onclick="location.href='/admin/bookings'" style="border-bottom-color:#F06292;">
+            <div class="stat-icon">📅</div>
+            <div class="stat-label">Total Bookings</div>
+            <div class="stat-value" th:text="${totalBookings ?: 0}">0</div>
+            <div class="stat-sub" th:text="'✓ ' + (${confirmedBookings ?: 0}) + ' confirmed'">✓ 0 confirmed</div>
+        </div>
+        <div class="stat-card" onclick="location.href='/admin/reports'" style="border-bottom-color:#880E4F;">
+            <div class="stat-icon">📊</div>
+            <div class="stat-label">Reports</div>
+            <div class="stat-value" th:text="${totalReports ?: 0}">0</div>
+            <div class="stat-sub">Generated reports</div>
+        </div>
+        <div class="stat-card" onclick="location.href='/admin/users/customers'" style="border-bottom-color:#4A148C;">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Customers</div>
+            <div class="stat-value" th:text="${totalCustomers ?: 0}">0</div>
+            <div class="stat-sub">Registered couples</div>
+        </div>
+    </div>
+
+    <!-- ── SYSTEM MODULES + RECENT CUSTOMERS ── -->
+    <div style="display: grid; grid-template-columns: 1fr 350px; gap: 24px; margin-bottom: 32px;">
+        <!-- Modules -->
+        <div class="section-card" style="margin-bottom: 0;">
+            <div class="section-header">
+                <h2>System Modules</h2>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <a href="/admin/bookings/new" class="btn btn-sm">+ New Booking</a>
+                    <a href="/admin/vendors/new"  class="btn btn-sm btn-outline">+ Add Vendor</a>
+                </div>
+            </div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Module</th>
+                        <th>Count</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>👤 User Management</strong></td>
+                        <td><span class="stat-chip" th:text="${totalUsers ?: 0}">0</span></td>
+                        <td><a href="/admin/users" class="btn btn-sm">Manage</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>🏪 Vendor Management</strong></td>
+                        <td><span class="stat-chip" th:text="${totalVendors ?: 0}">0</span></td>
+                        <td><a href="/admin/vendors" class="btn btn-sm">Manage</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📦 Package Management</strong></td>
+                        <td><span class="stat-chip" th:text="${totalPackages ?: 0}">0</span></td>
+                        <td><a href="/admin/packages" class="btn btn-sm">Manage</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📅 Booking System</strong></td>
+                        <td><span class="stat-chip" th:text="${totalBookings ?: 0}">0</span></td>
+                        <td><a href="/admin/bookings" class="btn btn-sm">Manage</a></td>
+                    </tr>
+                    <tr>
+                        <td><strong>📊 Report Management</strong></td>
+                        <td><span class="stat-chip" th:text="${totalReports ?: 0}">0</span></td>
+                        <td><a href="/admin/reports" class="btn btn-sm">Manage</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Recent Customers -->
+        <div class="section-card" style="margin-bottom: 0;">
+            <div class="section-header">
+                <h2>Recent Customers</h2>
+                <a href="/admin/users/customers" class="btn btn-sm btn-outline">View All</a>
+            </div>
+            <div th:if="${customers == null or #lists.isEmpty(customers)}" class="empty-state" style="padding: 20px;">
+                <p style="font-size: 0.85rem;">No customers found.</p>
+            </div>
+            <div th:unless="${customers == null or #lists.isEmpty(customers)}" style="display: flex; flex-direction: column; gap: 15px;">
+                <div th:each="customer, iter : ${customers}" th:if="${iter.index < 5}" style="display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.03);">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: linear-gradient(135deg,#880E4F,#4A148C); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">
+                        <img th:if="${customer.profilePic != null}" th:src="@{${customer.profilePic}}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <span th:unless="${customer.profilePic != null}" th:text="${#strings.substring(customer.firstName,0,1)}">C</span>
+                    </div>
+                    <div style="overflow: hidden;">
+                        <div style="font-size: 0.9rem; font-weight: 600; color: var(--dark-pink-shine); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" th:text="${customer.firstName + ' ' + customer.lastName}">Customer Name</div>
+                        <div style="font-size: 0.75rem; color: #888;" th:text="${customer.email}">customer@example.com</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── QUICK NAVIGATE TILES ── -->
+    <div class="dashboard-tiles">
+        <a href="/admin/users/new"   class="tile tile-pink">
+            <span class="tile-icon">➕</span>
+            <span>Add User</span>
+        </a>
+        <a href="/admin/vendors/new" class="tile tile-purple">
+            <span class="tile-icon">🏪</span>
+            <span>Add Vendor</span>
+        </a>
+        <a href="/admin/packages/new" class="tile tile-pink">
+            <span class="tile-icon">📦</span>
+            <span>New Package</span>
+        </a>
+        <a href="/admin/bookings/new" class="tile tile-purple">
+            <span class="tile-icon">📅</span>
+            <span>New Booking</span>
+        </a>
+        <a href="/admin/reports" class="tile tile-pink">
+            <span class="tile-icon">📊</span>
+            <span>View Reports</span>
+        </a>
+        <a href="/" class="tile tile-purple">
+            <span class="tile-icon">🌐</span>
+            <span>Public Site</span>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
